@@ -1,97 +1,91 @@
-class TextScrambler {
-  constructor(el) {
-    this.el = el;
-    this.chars = '!<>-_\\/[]{}—=+*^?#________';
-    this.frame = 0;
+constructor(el) {
+  this.el = el;
+  this.chars = '!<>-_\\/[]{}—=+*^?#________';
+  this.frame = 0;
+  this.queue = [];
+  this.resolve = null;
+  this.originalText = this.el.textContent;
+  this.frameRequest = null;
+  this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
+  
+  // Speed Controllers
+  this.duration = parseInt(el.dataset.scrambleDuration) || 600;
+  this.frameRate = 16.67;
+  this.totalFrames = Math.round(this.duration / this.frameRate); 
+  this.scrambleColor = el.dataset.scrambleColor || 
+                       (this.isActiveTab ? 'white' : '#FFD700');
+  this.onlyActive = el.hasAttribute('data-scramble-active-only');
+}
+
+setText(newText) {
+  if (this.onlyActive && !this.el.classList.contains('active')) {
+    this.el.textContent = this.originalText;
+    return Promise.resolve();
+  }
+
+  return new Promise(resolve => {
+    this.resolve = resolve;
     this.queue = [];
-    this.resolve = null;
-    this.originalText = this.el.textContent;
-    this.frameRequest = null;
-    this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
     
-    // Speed Controllers
-    this.duration = parseInt(el.dataset.scrambleDuration) || 600;
-    this.frameRate = 16.67;
-    this.totalFrames = Math.round(this.duration / this.frameRate); 
-    this.scrambleColor = el.dataset.scrambleColor || 
-                         (this.isActiveTab ? 'white' : '#FFD700');
-    this.onlyActive = el.hasAttribute('data-scramble-active-only');
-  }
-
-  setText(newText) {
-    if (this.onlyActive && !this.el.classList.contains('active')) {
-      this.el.textContent = this.originalText;
-      return Promise.resolve();
-    }
-
-    return new Promise(resolve => {
-      this.resolve = resolve;
-      this.queue = [];
-      
-      const oldText = this.el.textContent;
-      const length = Math.max(oldText.length, newText.length);
-      
-      for (let i = 0; i < length; i++) {
-        const from = oldText[i] || '';
-        const to = newText[i] || '';
-        const start = Math.floor(Math.random() * this.totalFrames * 0.3);
-        const end = start + Math.floor(Math.random() * this.totalFrames * 0.7);
-        this.queue.push({ from, to, start, end });
-      }
-      
-      cancelAnimationFrame(this.frameRequest);
-      this.frame = 0;
-      this.update();
-    });
-  }
-
-  update() {
-    let output = '';
-    let complete = 0;
+    const oldText = this.el.textContent;
+    const length = Math.max(oldText.length, newText.length);
     
-    for (let i = 0; i < this.queue.length; i++) {
-      let { from, to, start, end, char } = this.queue[i];
-      
-      if (this.frame >= end) {
-        complete++;
-        output += to;
-      } else if (this.frame >= start) {
-        if (!char || Math.random() < 0.28) {
-          char = this.randomChar();
-          this.queue[i].char = char;
-        }
-        output += `<span style="color:${this.scrambleColor}" class="scramble-char">${char}</span>`;
-      } else {
-        output += from;
-      }
+    for (let i = 0; i < length; i++) {
+      const from = oldText[i] || '';
+      const to = newText[i] || '';
+      const start = Math.floor(Math.random() * this.totalFrames * 0.3);
+      const end = start + Math.floor(Math.random() * this.totalFrames * 0.7);
+      this.queue.push({ from, to, start, end });
     }
     
-    this.el.innerHTML = output;
+    cancelAnimationFrame(this.frameRequest);
+    this.frame = 0;
+    this.update();
+  });
+}
+
+update() {
+  let output = '';
+  let complete = 0;
+  
+  for (let i = 0; i < this.queue.length; i++) {
+    let { from, to, start, end, char } = this.queue[i];
     
-    if (complete === this.queue.length) {
-      this.resolve();
+    if (this.frame >= end) {
+      complete++;
+      output += to;
+    } else if (this.frame >= start) {
+      if (!char || Math.random() < 0.28) {
+        char = this.randomChar();
+        this.queue[i].char = char;
+      }
+      output += `<span style="color:${this.scrambleColor}" class="scramble-char">${char}</span>`;
     } else {
-      this.frameRequest = requestAnimationFrame(this.update.bind(this));
-      this.frame++;
+      output += from;
     }
   }
-
-  randomChar() {
-    return this.chars[Math.floor(Math.random() * this.chars.length)];
+  
+  this.el.innerHTML = output;
+  
+  if (complete === this.queue.length) {
+    this.resolve();
+  } else {
+    this.frameRequest = requestAnimationFrame(this.update.bind(this));
+    this.frame++;
   }
+}
+
+randomChar() {
+  return this.chars[Math.floor(Math.random() * this.chars.length)];
 }
 
 // Initialize all scramblers
 document.addEventListener('DOMContentLoaded', () => {
-  const scramblers = new Map();
-
   // Regular elements
   document.querySelectorAll('[data-scramble]:not(.tab button)').forEach(el => {
     const scrambler = new TextScrambler(el);
-    scramblers.set(el, scrambler);
-
     el.addEventListener('mouseenter', () => scrambler.setText(scrambler.originalText));
-
+    
     if (el.tagName === 'A') {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -106,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.tab button');
   tabButtons.forEach(button => {
     const scrambler = new TextScrambler(button);
-    scramblers.set(button, scrambler);
     scrambler.onlyActive = true; // Only scramble when active
 
     button.addEventListener('mouseenter', () => {
@@ -120,9 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tabButtons.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
 
-      // Reuse existing scrambler instead of redeclaring
-      const scrambler = scramblers.get(this);
-      scrambler.setText(scrambler.originalText);
+      // Re-scramble with correct color
+      const newScrambler = new TextScrambler(this);
+      newScrambler.setText(newScrambler.originalText);
 
       // Call original tab function if exists
       if (typeof openTab === 'function') {
