@@ -12,13 +12,10 @@ class TextScrambler {
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate); 
-}
-    // Configuration
     this.scrambleColor = el.dataset.scrambleColor || 
                         (this.isActiveTab ? 'white' : '#FFD700');
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
-  
-  }
+}
 
   setText(newText) {
     // Skip if element should only scramble when active but isn't
