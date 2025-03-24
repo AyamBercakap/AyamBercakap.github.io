@@ -70,3 +70,15 @@ a:hover {
 .container:hover{
 	background-color:#76bedb;
 }
+.scramble {
+  color: #FFD700; /* Gold color for scramble chars */
+  display: inline-block;
+  min-width: 10px;
+  text-align: center;
+}
+
+a.container {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
