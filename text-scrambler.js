@@ -46,6 +46,56 @@ class TextScramble {
         output += from;
       }
     }
+     scrambleOnActive() {
+    if (this.isActiveTab) {
+      // Continuous subtle scramble effect for active tab
+      this.setText(this.originalText).then(() => {
+        if (this.element.classList.contains('active')) {
+          setTimeout(() => this.scrambleOnActive(), 1000);
+        }
+      });
+    }
+  }
+}
+
+  // For tab buttons
+  const tabButtons = document.querySelectorAll('.tab button');
+  tabButtons.forEach(button => {
+    const scrambler = new TextScramble(button);
+    
+    button.addEventListener('mouseenter', () => {
+      scrambler.setText(scrambler.originalText);
+    });
+    
+    // Check if button is active on load
+    if (button.classList.contains('active')) {
+      scrambler.scrambleOnActive();
+    }
+  });
+  const links = document.querySelectorAll('a.container');
+  links.forEach(link => {
+    const scrambler = new TextScramble(link);
+    
+    link.addEventListener('mouseenter', () => {
+      scrambler.setText(scrambler.originalText);
+    });
+    
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      scrambler.setText(scrambler.originalText).then(() => {
+        window.location.href = link.href;
+      });
+    });
+  });
+
+  // Watch for tab changes to apply active scramble
+  document.querySelector('.tab').addEventListener('click', (e) => {
+    if (e.target.classList.contains('tablinks')) {
+      const activeScrambler = new TextScramble(e.target);
+      activeScrambler.scrambleOnActive();
+    }
+  });
+});
 
     this.element.innerHTML = output;
     
