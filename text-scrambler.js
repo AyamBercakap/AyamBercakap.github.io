@@ -3,6 +3,7 @@ class TextScramble {
     this.element = element;
     this.chars = '!<>-_\\/[]{}—=+*^?#________';
     this.update = this.update.bind(this);
+    this.originalText = element.innerText;
   }
 
   setText(newText) {
@@ -61,22 +62,31 @@ class TextScramble {
   }
 }
 
-// Initialize scrambler on all links with class 'container'
+// Initialize scrambler on both tab buttons and container links
 document.addEventListener('DOMContentLoaded', () => {
+  // For tab buttons
+  const tabButtons = document.querySelectorAll('.tab button');
+  tabButtons.forEach(button => {
+    const scrambler = new TextScramble(button);
+    
+    button.addEventListener('mouseenter', () => {
+      scrambler.setText(scrambler.originalText);
+    });
+  });
+
+  // For container links
   const links = document.querySelectorAll('a.container');
-  
   links.forEach(link => {
-    const originalText = link.innerText;
     const scrambler = new TextScramble(link);
     
     link.addEventListener('mouseenter', () => {
-      scrambler.setText(originalText);
+      scrambler.setText(scrambler.originalText);
     });
     
     // Optional: Add click effect too
     link.addEventListener('click', (e) => {
       e.preventDefault();
-      scrambler.setText(originalText).then(() => {
+      scrambler.setText(scrambler.originalText).then(() => {
         window.location.href = link.href;
       });
     });
