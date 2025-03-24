@@ -19,7 +19,7 @@
 
 /* Active tab specific styles */
 .tab button.active .scramble-char {
-  color: #FFA500;
+  color: #FFFFFF;
   animation: 
     scramble-pulse 0.8s infinite alternate,
     scramble-drift 1.5s infinite alternate;
