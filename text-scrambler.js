@@ -8,7 +8,11 @@ class TextScrambler {
     this.originalText = this.el.textContent;
     this.frameRequest = null;
     this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
-    
+    // Speed Controllers
+    this.duration = parseInt(el.dataset.scrambleDuration) || 600;
+    this.frameRate = 16.67;
+    this.totalFrames = Math.round(this.duration / this.frameRate); 
+}
     // Configuration
     this.scrambleColor = el.dataset.scrambleColor || 
                         (this.isActiveTab ? 'white' : '#FFD700');
@@ -32,10 +36,10 @@ class TextScrambler {
       for (let i = 0; i < length; i++) {
         const from = oldText[i] || '';
         const to = newText[i] || '';
-        const start = Math.floor(Math.random() * 40);
-        const end = start + Math.floor(Math.random() * 40);
+        const start = Math.floor(Math.random() * this.totalFrames * 0.3);
+        const end = start + Math.floor(Math.random() * this.totalFrames * 0.7);
         this.queue.push({ from, to, start, end });
-      }
+  }
       
       cancelAnimationFrame(this.frameRequest);
       this.frame = 0;
