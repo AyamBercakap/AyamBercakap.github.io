@@ -3,11 +3,14 @@ class TextScramble {
     this.element = element;
     this.chars = '!<>-_\\/[]{}—=+*^?#________';
     this.update = this.update.bind(this);
-    this.originalText = element.innerText;
+    this.originalText = element.textContent;
+    this.isActiveTab = element.classList.contains('active');
+    this.duration = element.dataset.scrambleDuration || 1000;
+    this.intensity = element.dataset.scrambleIntensity || 0.28;
   }
 
   setText(newText) {
-    const oldText = this.element.innerText;
+    const oldText = this.element.textContent;
     const length = Math.max(oldText.length, newText.length);
     const promise = new Promise((resolve) => this.resolve = resolve);
     this.queue = [];
@@ -37,65 +40,15 @@ class TextScramble {
         complete++;
         output += to;
       } else if (this.frame >= start) {
-        if (!char || Math.random() < 0.28) {
+        if (!char || Math.random() < this.intensity) {
           char = this.randomChar();
           this.queue[i].char = char;
         }
-        output += `<span class="scramble">${char}</span>`;
+        output += `<span class="scramble-char">${char}</span>`;
       } else {
         output += from;
       }
     }
-     scrambleOnActive() {
-    if (this.isActiveTab) {
-      // Continuous subtle scramble effect for active tab
-      this.setText(this.originalText).then(() => {
-        if (this.element.classList.contains('active')) {
-          setTimeout(() => this.scrambleOnActive(), 1000);
-        }
-      });
-    }
-  }
-}
-
-  // For tab buttons
-  const tabButtons = document.querySelectorAll('.tab button');
-  tabButtons.forEach(button => {
-    const scrambler = new TextScramble(button);
-    
-    button.addEventListener('mouseenter', () => {
-      scrambler.setText(scrambler.originalText);
-    });
-    
-    // Check if button is active on load
-    if (button.classList.contains('active')) {
-      scrambler.scrambleOnActive();
-    }
-  });
-  const links = document.querySelectorAll('a.container');
-  links.forEach(link => {
-    const scrambler = new TextScramble(link);
-    
-    link.addEventListener('mouseenter', () => {
-      scrambler.setText(scrambler.originalText);
-    });
-    
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      scrambler.setText(scrambler.originalText).then(() => {
-        window.location.href = link.href;
-      });
-    });
-  });
-
-  // Watch for tab changes to apply active scramble
-  document.querySelector('.tab').addEventListener('click', (e) => {
-    if (e.target.classList.contains('tablinks')) {
-      const activeScrambler = new TextScramble(e.target);
-      activeScrambler.scrambleOnActive();
-    }
-  });
-});
 
     this.element.innerHTML = output;
     
@@ -110,35 +63,62 @@ class TextScramble {
   randomChar() {
     return this.chars[Math.floor(Math.random() * this.chars.length)];
   }
+
+  startContinuousEffect() {
+    this.setText(this.originalText).then(() => {
+      if (this.element.classList.contains('active') || 
+          this.element.hasAttribute('data-scramble-continuous')) {
+        setTimeout(() => this.startContinuousEffect(), this.duration);
+      }
+    });
+  }
 }
 
-// Initialize scrambler on both tab buttons and container links
+// Initialize scrambler on all elements with data-scramble attribute
 document.addEventListener('DOMContentLoaded', () => {
-  // For tab buttons
+  // Initialize all elements with data-scramble attribute
+  document.querySelectorAll('[data-scramble]').forEach(el => {
+    const scrambler = new TextScramble(el);
+    
+    // Set custom properties if defined
+    if (el.dataset.scrambleChars) {
+      scrambler.chars = el.dataset.scrambleChars;
+    }
+    if (el.dataset.scrambleIntensity) {
+      scrambler.intensity = parseFloat(el.dataset.scrambleIntensity);
+    }
+    
+    // Mouseenter effect
+    if (!el.hasAttribute('data-scramble-no-hover')) {
+      el.addEventListener('mouseenter', () => {
+        scrambler.setText(scrambler.originalText);
+      });
+    }
+    
+    // Continuous effect if specified
+    if (el.hasAttribute('data-scramble-continuous')) {
+      scrambler.startContinuousEffect();
+    }
+  });
+
+  // Special handling for tab system
   const tabButtons = document.querySelectorAll('.tab button');
   tabButtons.forEach(button => {
     const scrambler = new TextScramble(button);
-    
     button.addEventListener('mouseenter', () => {
       scrambler.setText(scrambler.originalText);
     });
+    
+    if (button.classList.contains('active')) {
+      scrambler.startContinuousEffect();
+    }
   });
 
-  // For container links
-  const links = document.querySelectorAll('a.container');
-  links.forEach(link => {
-    const scrambler = new TextScramble(link);
-    
-    link.addEventListener('mouseenter', () => {
-      scrambler.setText(scrambler.originalText);
-    });
-    
-    // Optional: Add click effect too
-    link.addEventListener('click', (e) => {
-      e.preventDefault();
-      scrambler.setText(scrambler.originalText).then(() => {
-        window.location.href = link.href;
-      });
-    });
+  // Watch for tab changes
+  document.querySelector('.tab')?.addEventListener('click', (e) => {
+    if (e.target.classList.contains('tablinks')) {
+      const activeScrambler = new TextScramble(e.target);
+      activeScrambler.startContinuousEffect();
+    }
   });
 });
