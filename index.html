@@ -15,7 +15,13 @@
 <p data-scramble data-scramble-color="#FF0000">Red scramble</p>
 
 <div class="tab">
-  <button class="tablinks" onclick="openTab(event, 'WP')">Web Programming</button>
+  <button class="tablinks active" 
+          data-scramble
+          data-scramble-color="red" <!-- Active tab color -->
+          data-scramble-active-only <!-- Only scramble when active -->
+          onclick="openTab(event, 'WP')">
+    Web Programming
+  </button>
   <button class="tablinks" data-scramble data-scramble-active-only onclick="openTab(event, 'OODI')">OODI</button>
   <button class="tablinks" onclick="openTab(event, 'DCN')">DataCom</button>
   <button class="tablinks" onclick="openTab(event, 'GUI')">GUI</button>
