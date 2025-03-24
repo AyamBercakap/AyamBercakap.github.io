@@ -1,4 +1,3 @@
-class TextScrambler {
   constructor(el) {
     this.el = el;
     this.chars = '!<>-_\\/[]{}—=+*^?#________';
