@@ -8,15 +8,16 @@ class TextScrambler {
     this.originalText = this.el.textContent;
     this.frameRequest = null;
     this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
+    // Speed Controllers
+    this.duration = parseInt(el.dataset.scrambleDuration) || 600;
+    this.frameRate = 16.67;
+    this.totalFrames = Math.round(this.duration / this.frameRate); 
 }
     // Configuration
     this.scrambleColor = el.dataset.scrambleColor || 
                         (this.isActiveTab ? 'white' : '#FFD700');
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
-  // Speed Controllers
-    this.duration = parseInt(el.dataset.scrambleDuration) || 600;
-    this.frameRate = 16.67;
-    this.totalFrames = Math.round(this.duration / this.frameRate); 
+  
   }
 
   setText(newText) {
