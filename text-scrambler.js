@@ -7,12 +7,21 @@ class TextScrambler {
     this.resolve = null;
     this.originalText = this.el.textContent;
     this.frameRequest = null;
+    this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
     
-    // Get color from data attribute or use default
-    this.scrambleColor = el.dataset.scrambleColor || '#FFD700'; // Default gold
+    // Configuration
+    this.scrambleColor = el.dataset.scrambleColor || 
+                        (this.isActiveTab ? 'white' : '#FFD700');
+    this.onlyActive = el.hasAttribute('data-scramble-active-only');
   }
 
   setText(newText) {
+    // Skip if element should only scramble when active but isn't
+    if (this.onlyActive && !this.el.classList.contains('active')) {
+      this.el.textContent = this.originalText;
+      return Promise.resolve();
+    }
+
     return new Promise(resolve => {
       this.resolve = resolve;
       this.queue = [];
@@ -49,7 +58,6 @@ class TextScrambler {
           char = this.randomChar();
           this.queue[i].char = char;
         }
-        // Apply the scramble color with inline style
         output += `<span style="color:${this.scrambleColor}" class="scramble-char">${char}</span>`;
       } else {
         output += from;
@@ -71,16 +79,13 @@ class TextScrambler {
   }
 }
 
-// Initialize with support for color customization
+// Initialize all scramblers
 document.addEventListener('DOMContentLoaded', () => {
-  document.querySelectorAll('[data-scramble]').forEach(el => {
+  // Regular elements
+  document.querySelectorAll('[data-scramble]:not(.tab button)').forEach(el => {
     const scrambler = new TextScrambler(el);
+    el.addEventListener('mouseenter', () => scrambler.setText(scrambler.originalText));
     
-    el.addEventListener('mouseenter', () => {
-      scrambler.setText(scrambler.originalText);
-    });
-    
-    // Special handling for clickable elements
     if (el.tagName === 'A') {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -88,6 +93,38 @@ document.addEventListener('DOMContentLoaded', () => {
           window.location.href = el.href;
         });
       });
+    }
+  });
+
+  // Tab buttons with special handling
+  const tabButtons = document.querySelectorAll('.tab button');
+  tabButtons.forEach(button => {
+    const scrambler = new TextScrambler(button);
+    scrambler.onlyActive = true; // Only scramble when active
+    
+    button.addEventListener('mouseenter', () => {
+      scrambler.setText(scrambler.originalText);
+    });
+    
+    button.addEventListener('click', function(e) {
+      // Update active state
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Re-scramble with correct color
+      const newScrambler = new TextScrambler(this);
+      newScrambler.setText(newScrambler.originalText);
+      
+      // Call original tab function if exists
+      if (typeof openTab === 'function') {
+        const tabName = this.getAttribute('onclick').match(/'([^']+)'/)[1];
+        openTab(e, tabName);
+      }
+    });
+    
+    // Initial scramble if active
+    if (button.classList.contains('active')) {
+      scrambler.setText(scrambler.originalText);
     }
   });
 });
