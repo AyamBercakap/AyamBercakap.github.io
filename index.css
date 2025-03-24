@@ -7,8 +7,7 @@
 .scramble-char {
   display: inline-block;
   min-width: 8px;
-  color: inherit;
-  transition: all 0.1s ease;
+  transition: transform 0.1s ease;;
 }
 
 /* Hover effects */
