@@ -110,7 +110,39 @@ a:hover {
   50% { opacity: 1; }
   100% { opacity: 0.3; }
 }
+/* Base scramble character style */
+.scramble-char {
+  display: inline-block;
+  min-width: 8px;
+  color: currentColor;
+}
 
+/* Default scramble effect */
+[data-scramble] {
+  position: relative;
+  display: inline-block;
+}
+
+/* Active tab specific styles */
+.tab button.active .scramble-char {
+  color: #FFA500;
+  animation: scramble-pulse 0.8s infinite alternate;
+}
+
+@keyframes scramble-pulse {
+  from { opacity: 0.6; transform: translateY(-1px); }
+  to { opacity: 1; transform: translateY(1px); }
+}
+
+/* Continuous scramble effect */
+[data-scramble-continuous] .scramble-char {
+  animation: scramble-drift 2s infinite alternate;
+}
+
+@keyframes scramble-drift {
+  0% { transform: translateX(0) rotate(0deg); }
+  100% { transform: translateX(2px) rotate(2deg); }
+}
 a.container {
   position: relative;
   overflow: hidden;
