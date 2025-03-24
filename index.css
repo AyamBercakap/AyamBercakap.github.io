@@ -1,29 +1,50 @@
- /* Style the tab */
+body {font-family: Arial;}
+
+/* Style the tab */
+       
+hr {
+  height: 1px;
+  background-color: none;
+  border: none;
+}
+a {
+  font-family: "Roboto Condensed", serif;
+  font-size: 16px;
+  color: white; text-decoration: none;
+}
+a:hover {
+  color: yellow;
+}
 .tab {
   overflow: hidden;
   border: 1px solid #ccc;
-  background-color: #f1f1f1;
+  background-color:#FFB6C1;
+  display: flex; /* Added flex display */
 }
 
-/* Style the buttons that are used to open the tab content */
+/* Style the buttons inside the tab */
 .tab button {
   background-color: inherit;
-  float: left;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 14px 16px;
   transition: 0.3s;
+  font-size: 17px;
+  font-family: "Roboto Condensed", serif;
+  color:white;
+  flex: 1; /* This makes each button take equal space */
+  text-align: center; /* Center the text */
 }
 
 /* Change background color of buttons on hover */
 .tab button:hover {
-  background-color: #ddd;
+  background-color: #e096a2;
 }
 
 /* Create an active/current tablink class */
 .tab button.active {
-  background-color: #ccc;
+  background-color: #c2848e;
 }
 
 /* Style the tab content */
@@ -32,4 +53,20 @@
   padding: 6px 12px;
   border: 1px solid #ccc;
   border-top: none;
-} 
+  font-family: "Roboto Condensed", serif;
+  background-color:#101414;
+  color:white;
+}
+.container {
+	font-family: "Roboto Mono", serif;
+	background-color:#82D1F1;
+	color:white;
+	margin: 10px;
+	padding: 5px;
+    padding-left: 10px;
+    padding-right: 80%;
+    border-radius: 5px;
+    }
+.container:hover{
+	background-color:#76bedb;
+}
