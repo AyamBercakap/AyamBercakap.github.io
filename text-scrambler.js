@@ -1,3 +1,4 @@
+class TextScrambler {
   constructor(el) {
     this.el = el;
     this.chars = '!<>-_\\/[]{}—=+*^?#________';
@@ -7,14 +8,15 @@
     this.originalText = this.el.textContent;
     this.frameRequest = null;
     this.isActiveTab = el.classList.contains('active') && el.closest('.tab');
+    
     // Speed Controllers
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate); 
     this.scrambleColor = el.dataset.scrambleColor || 
-                        (this.isActiveTab ? 'white' : '#FFD700');
+                         (this.isActiveTab ? 'white' : '#FFD700');
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
-}
+  }
 
   setText(newText) {
     // Skip if element should only scramble when active but isn't
@@ -36,7 +38,7 @@
         const start = Math.floor(Math.random() * this.totalFrames * 0.3);
         const end = start + Math.floor(Math.random() * this.totalFrames * 0.7);
         this.queue.push({ from, to, start, end });
-  }
+      }
       
       cancelAnimationFrame(this.frameRequest);
       this.frame = 0;
@@ -107,22 +109,26 @@ document.addEventListener('DOMContentLoaded', () => {
       scrambler.setText(scrambler.originalText);
     });
     
-    button.addEventListener('click', function(e) {
+    button.addEventListener('click', function (e) {
+      e.preventDefault();
+
       // Update active state
       tabButtons.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
-      
+
       // Re-scramble with correct color
       const newScrambler = new TextScrambler(this);
       newScrambler.setText(newScrambler.originalText);
-      
+
       // Call original tab function if exists
       if (typeof openTab === 'function') {
-        const tabName = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-        openTab(e, tabName);
+        const tabName = this.getAttribute('onclick')?.match(/'([^']+)'/)?.[1];
+        if (tabName) {
+          openTab(e, tabName);
+        }
       }
     });
-    
+
     // Initial scramble if active
     if (button.classList.contains('active')) {
       scrambler.setText(scrambler.originalText);
