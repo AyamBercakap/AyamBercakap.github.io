@@ -19,7 +19,6 @@ class TextScrambler {
   }
 
   setText(newText) {
-    // Skip if element should only scramble when active but isn't
     if (this.onlyActive && !this.el.classList.contains('active')) {
       this.el.textContent = this.originalText;
       return Promise.resolve();
@@ -84,11 +83,15 @@ class TextScrambler {
 
 // Initialize all scramblers
 document.addEventListener('DOMContentLoaded', () => {
+  const scramblers = new Map();
+
   // Regular elements
   document.querySelectorAll('[data-scramble]:not(.tab button)').forEach(el => {
     const scrambler = new TextScrambler(el);
+    scramblers.set(el, scrambler);
+
     el.addEventListener('mouseenter', () => scrambler.setText(scrambler.originalText));
-    
+
     if (el.tagName === 'A') {
       el.addEventListener('click', (e) => {
         e.preventDefault();
@@ -103,12 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const tabButtons = document.querySelectorAll('.tab button');
   tabButtons.forEach(button => {
     const scrambler = new TextScrambler(button);
+    scramblers.set(button, scrambler);
     scrambler.onlyActive = true; // Only scramble when active
-    
+
     button.addEventListener('mouseenter', () => {
       scrambler.setText(scrambler.originalText);
     });
-    
+
     button.addEventListener('click', function (e) {
       e.preventDefault();
 
@@ -116,9 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tabButtons.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
 
-      // Re-scramble with correct color
-      const newScrambler = new TextScrambler(this);
-      newScrambler.setText(newScrambler.originalText);
+      // Reuse existing scrambler instead of redeclaring
+      const scrambler = scramblers.get(this);
+      scrambler.setText(scrambler.originalText);
 
       // Call original tab function if exists
       if (typeof openTab === 'function') {
