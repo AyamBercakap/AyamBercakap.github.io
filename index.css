@@ -35,6 +35,9 @@ a:hover {
   color:white;
   flex: 1; /* This makes each button take equal space */
   text-align: center; /* Center the text */
+  /* Add these to your existing CSS */
+  position: relative;
+  overflow: hidden;
 }
 
 /* Change background color of buttons on hover */
@@ -70,6 +73,7 @@ a:hover {
 .container:hover{
 	background-color:#76bedb;
 }
+/* Add these to your existing CSS */
 .scramble {
   color: #FFD700; /* Gold color for scramble chars */
   display: inline-block;
