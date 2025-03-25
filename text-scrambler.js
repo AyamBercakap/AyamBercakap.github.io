@@ -6,12 +6,13 @@ class TextScrambler {
     this.resolve = null;
     this.originalText = el.textContent;
     this.frameRequest = null;
-    this.chars = '!<>-_\\/[]{}—=+*^?#________';
-    // Configuration
+    
+    // Configurable
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = el.dataset.scrambleColor || '#FFFFFF';
+    this.chars = el.dataset.scrambleChars || '!<>-_\\/[]{}—=+*^?#________';
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
     this.continuous = el.hasAttribute('data-scramble-continuous');
   }
