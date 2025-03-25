@@ -16,25 +16,10 @@ class TextScrambler {
     this.continuous = el.hasAttribute('data-scramble-continuous');
     
     // charset with 3 fallbacks
-    this.chars = this._resolveCharSet(el);
-  }
-
-  _resolveCharSet(el) {
     const charSource = el.dataset.scrambleChars;
-    
-    // check if referring global vars
-    if (charSource && window[charSource]) {
-      return window[charSource];
-    }
-    
-    // check if it is a string
-    if (charSource && typeof charSource === 'string') {
-      return charSource;
-    }
-    
-    // Fall back to default symbol
-    return '!<>-_\\/[]{}—=+*^?#________';
-  }
+    this.chars = (charSource && window[charSource]) 
+                ? window[charSource] 
+                : charSource || el.dataset.scrambleChars || '!<>-_\\/[]{}—=+*^?#________';
 
   setText(newText) {
     if (this.onlyActive && !this.el.classList.contains('active')) {
