@@ -43,13 +43,14 @@
 body {
   font-family: "Noto Sans", serif;
   background-color:#101414;
-  color:"white";
+  color:white;
 }
 h1, h2, h3 {
   font-family: "Roboto Mono", serif;
 }
  
 a {
+  color:white;
   font-size: 16px;
 }
  
