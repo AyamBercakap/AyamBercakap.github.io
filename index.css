@@ -116,10 +116,10 @@ hr{
   background-color: #101414;
   color: white;
   border-radius: 0px 0px 5px 5px;
-  margin: 5px 0;              /* Remove side margins */
-  width: 100%;                /* Full width of tabcontent */
-  padding: 6px 12px;          /* Slightly larger internal padding */
+  width: 100%;     
+  padding: 6px 12px;         
   border-top: none;
+  margin: 0 -1px;
   width: calc(100% + 2px);
 }
 .container {
