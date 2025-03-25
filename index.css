@@ -69,11 +69,12 @@ hr{
 
 /*Tab Styles*/
 .tab {
-  overflow: hidden;
-  border: 1px solid #ccc;
   background-color: #FFB6C1;
   display: flex;
-  border-radius: 5px 5px 0px 0px;
+  width: 100%;
+  min-width: fit-content; /* Prevent shrinking smaller than tabs */
+  overflow: hidden; /* Clean up edges */
+   border-radius: 5px 5px 0px 0px;
 }
 
 .tab button {
@@ -89,8 +90,11 @@ hr{
   flex: 1;
   text-align: center;
   position: relative;
+  flex: 1 1 0; /* Equal width distribution */
+  min-width: 0; /* Allow text truncation */
+  white-space: nowrap;
+  overflow: hidden;
 }
-
 .tab button:hover {
   background-color: #e096a2;
 }
@@ -100,6 +104,7 @@ hr{
 }
 
 .tabcontent {
+  box-sizing: border-box;
   display: none;
   border: 1px solid #ccc;
   border-top: none;
@@ -110,8 +115,8 @@ hr{
   margin: 5px 0;              /* Remove side margins */
   width: 100%;                /* Full width of tabcontent */
   padding: 6px 12px;          /* Slightly larger internal padding */
+  border-top: none;
 }
-
 .container {
   font-family: "Roboto Mono", serif;
   background-color: #82D1F1;
@@ -125,8 +130,24 @@ hr{
   position: relative;
   transition: background-color 0.2s ease;
 }
-
+.tabcontent .container {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+  padding: 8px 12px;
+  box-sizing: border-box;
+}
 .container:hover {
   background-color: #76bedb;
+}
+/* Add this for responsive behavior */
+@media (max-width: 600px) {
+  .tab button {
+    padding: 10px 8px;
+    font-size: 14px;
+  }
+  .tabcontent {
+    padding: 8px;
+  }
 }
 
