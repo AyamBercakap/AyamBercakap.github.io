@@ -94,7 +94,7 @@ hr{
   flex: 1;
   text-align: center;
   position: relative;
-  flex: 1 1 0; /* Equal width distribution */
+  flex:1; /* Equal width distribution */
   min-width: 0; /* Allow text truncation */
   white-space: nowrap;
   overflow: hidden;
