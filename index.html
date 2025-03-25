@@ -9,6 +9,9 @@
     <title>Dani's Website</title>
 </head>
 <body>
+    <p data-scramble data-scramble-mappings="$testMappings">
+  Uses testMappings variable
+</p>
     <p data-scramble>Hover over me</p>
     <p data-scramble data-scramble-chars="galactic">
   Galactic Scramble
@@ -83,9 +86,10 @@
 <script src="tabs.js"></script>
 <script src="text-scrambler.js"></script>
 <script>
-var galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
-var binary = "01";
-var emoji = "✨⭐🌟💫☄️🌠";
+const galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
+const binary = "01";
+const emoji = "😀😎🤖👾🎮";
+const testMappings = "a:123, b:456";
 document.addEventListener('DOMContentLoaded', () => {
     const scrambleElements = document.querySelectorAll('[data-scramble]');
     scrambleElements.forEach((element) => {
