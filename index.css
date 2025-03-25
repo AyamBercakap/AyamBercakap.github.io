@@ -101,26 +101,29 @@ hr{
 
 .tabcontent {
   display: none;
-  padding: 6px 12px;
   border: 1px solid #ccc;
   border-top: none;
   font-family: "Roboto Condensed", serif;
   background-color: #101414;
   color: white;
   border-radius: 0px 0px 5px 5px;
+  margin: 5px 0;              /* Remove side margins */
+  width: 100%;                /* Full width of tabcontent */
+  padding: 5px 15px;          /* Slightly larger internal padding */
 }
 
 .container {
   font-family: "Roboto Mono", serif;
   background-color: #82D1F1;
   color: white;
-  padding: 5px 10px;       /* 5px top/bottom, 10px left/right */
+  padding: 5px 10px;           /* Equal 10px left/right padding */
   border-radius: 5px;
-  display: block;          /* Force full-width behavior */
-  width: 100%;            /* Take full available width */
-  box-sizing: border-box;  /* Include padding in width */
-  margin-right: 10px;      /* Right gap */
-  max-width: calc(100% - 10px); /* Ensures 10px right spacing */
+  display: block;              /* Force full-width behavior */
+  width: calc(100% - 20px);    /* Full width minus total margins */
+  margin: 5px 10px;            /* 10px left/right margins */
+  box-sizing: border-box;      /* Include padding in width */
+  position: relative;
+  transition: background-color 0.2s ease;
 }
 
 .container:hover {
