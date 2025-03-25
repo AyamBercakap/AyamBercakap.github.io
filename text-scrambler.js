@@ -7,28 +7,34 @@ class TextScrambler {
     this.originalText = el.textContent;
     this.frameRequest = null;
     
-    // Configuration
+    // Character set handling
+    const charSource = el.dataset.scrambleChars;
+    this.chars = charSource 
+      ? (window[charSource] || charSource)
+      : '!<>-_\\/[]{}—=+*^?#________';
+    
+    // Config
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = el.dataset.scrambleColor || '#FFFFFF';
-    this.onlyActive = el.hasAttribute('data-scramble-active-only');
     this.continuous = el.hasAttribute('data-scramble-continuous');
-    
-    // charset with 3 fallbacks
-    const charSource = el.dataset.scrambleChars;
-    this.chars = (charSource && window[charSource]) 
-                ? window[charSource] 
-                : charSource || el.dataset.scrambleChars || '!<>-_\\/[]{}—=+*^?#________';
+    this.isScrambling = false;
+  }
 
   setText(newText) {
-    if (this.onlyActive && !this.el.classList.contains('active')) {
-      this.el.textContent = this.originalText;
-      return Promise.resolve();
-    }
-
+    if (this.isScrambling) return;
+    this.isScrambling = true;
+    
     return new Promise(resolve => {
-      this.resolve = resolve;
+      this.resolve = () => {
+        resolve();
+        this.isScrambling = false;
+        if (this.continuous) {
+          this._queueNextScramble();
+        }
+      };
+      
       this.queue = [];
       const oldText = this.el.textContent;
       const length = Math.max(oldText.length, newText.length);
@@ -44,6 +50,12 @@ class TextScrambler {
       cancelAnimationFrame(this.frameRequest);
       this.frame = 0;
       this.update();
+    });
+  }
+
+  _queueNextScramble() {
+    this.frameRequest = requestAnimationFrame(() => {
+      this.setText(this.originalText);
     });
   }
 
@@ -73,9 +85,6 @@ class TextScrambler {
 
     if (complete === this.queue.length) {
       this.resolve();
-      if (this.continuous || (this.onlyActive && this.el.classList.contains('active'))) {
-        requestAnimationFrame(() => this.setText(this.originalText));
-      }
     } else {
       this.frameRequest = requestAnimationFrame(this.update.bind(this));
       this.frame++;
@@ -87,47 +96,16 @@ class TextScrambler {
   }
 }
 
-// Initialize with all features
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
-  // Regular elements
   document.querySelectorAll('[data-scramble]').forEach(el => {
     const scrambler = new TextScrambler(el);
     
-    // Continuous animation
-    if (el.hasAttribute('data-scramble-continuous')) {
+    el.addEventListener('mouseenter', () => {
       scrambler.setText(scrambler.originalText);
-    }
-    
-    // Hover effect (unless disabled)
-    if (!el.hasAttribute('data-scramble-no-hover')) {
-      el.addEventListener('mouseenter', () => {
-        scrambler.setText(scrambler.originalText);
-      });
-    }
-  });
-
-  // Tab system integration
-  const tabButtons = document.querySelectorAll('.tab button[data-scramble]');
-  tabButtons.forEach(button => {
-    const scrambler = new TextScrambler(button);
-    
-    button.addEventListener('click', function(e) {
-      // Update active state
-      tabButtons.forEach(btn => btn.classList.remove('active'));
-      this.classList.add('active');
-      
-      // Re-scramble with proper character set
-      new TextScrambler(this).setText(this.textContent);
-      
-      // Call original tab handler if exists
-      if (typeof openTab === 'function') {
-        const tabName = this.onclick.toString().match(/'([^']+)'/)[1];
-        openTab(e, tabName);
-      }
     });
-
-    // Initialize active tab
-    if (button.classList.contains('active')) {
+    
+    if (el.hasAttribute('data-scramble-continuous')) {
       scrambler.setText(scrambler.originalText);
     }
   });
