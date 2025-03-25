@@ -1,7 +1,6 @@
 class TextScrambler {
   constructor(el) {
     this.el = el;
-    this.chars = '!<>-_\\/[]{}—=+*^?#________';
     this.frame = 0;
     this.queue = [];
     this.resolve = null;
@@ -13,6 +12,7 @@ class TextScrambler {
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = el.dataset.scrambleColor || '#FFFFFF';
+    this.chars = el.dataset.chars || '!<>-_\\/[]{}—=+*^?#________';
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
     this.continuous = el.hasAttribute('data-scramble-continuous');
   }
