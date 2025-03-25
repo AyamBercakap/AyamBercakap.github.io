@@ -109,7 +109,7 @@ hr{
   border-radius: 0px 0px 5px 5px;
   margin: 5px 0;              /* Remove side margins */
   width: 100%;                /* Full width of tabcontent */
-  padding: 5px 15px;          /* Slightly larger internal padding */
+  padding: 6px 12px;          /* Slightly larger internal padding */
 }
 
 .container {
