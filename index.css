@@ -119,8 +119,8 @@ hr{
   width: 100%;     
   padding: 6px 12px;         
   border-top: none;
-  margin: 0 -1px;
-  width: calc(100% + 2px);
+  margin: 0 -2px;
+  width: calc(100% + 4px);
 }
 .container {
   font-family: "Roboto Mono", serif;
