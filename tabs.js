@@ -1,5 +1,3 @@
-// Remove any TextScrambler class declaration from tabs.js
-// Only keep the openTab function
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
