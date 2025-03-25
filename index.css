@@ -43,15 +43,14 @@
 body {
   font-family: "Noto Sans", serif;
   background-color:#101414;
+  color:"white";
 }
 h1, h2, h3 {
-  font-family: 'Roboto Mono', serif;
+  font-family: "Roboto Mono", serif;
 }
  
 a {
-  font-family: "Roboto Condensed", serif;
   font-size: 16px;
-  color: white; text-decoration: none;
 }
  
 a:hover {
