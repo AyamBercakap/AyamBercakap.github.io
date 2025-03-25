@@ -116,11 +116,11 @@ hr{
   color: white;
   padding: 5px 10px;       /* 5px top/bottom, 10px left/right */
   border-radius: 5px;
-  display: block;          /* Changed to block for full width */
-  position: relative;
-  width: calc(100% - 10px); /* Full width minus 10px right gap */
-  box-sizing: border-box;  /* Includes padding in width calculation */
-  margin-right: 10px;      /* Ensures 10px gap on the right */
+  display: block;          /* Force full-width behavior */
+  width: 100%;            /* Take full available width */
+  box-sizing: border-box;  /* Include padding in width */
+  margin-right: 10px;      /* Right gap */
+  max-width: calc(100% - 10px); /* Ensures 10px right spacing */
 }
 
 .container:hover {
