@@ -10,4 +10,10 @@ function openTab(evt, tabName) {
     }
     document.getElementById(tabName).style.display = "block";
     evt.currentTarget.className += " active";
+
+    // Trigger scramble on active tab button
+    const activeButton = evt.currentTarget;
+    if (activeButton.scrambler) {
+        activeButton.scrambler.setText(activeButton.scrambler.originalText);
+    }
 }
