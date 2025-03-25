@@ -144,7 +144,7 @@ hr{
 .container:hover {
   background-color: #76bedb;
 }
-/* Add this for responsive behavior */
+/* Mobile Device Support */
 @media (max-width: 600px) {
   .tab button {
     padding: 10px 8px;
@@ -153,5 +153,9 @@ hr{
   .tabcontent {
     padding: 8px;
   }
+}
+/* web programming opens by default */
+#WP.tabcontent {
+  display: block;
 }
 
