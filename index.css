@@ -76,8 +76,9 @@ hr{
   overflow: hidden; /* Clean up edges */
   border-radius: 5px 5px 0px 0px;
   border-bottom: none;
-  margin-bottom: 0;
+  border-bottom-style: none;
   border: 1px solid #ccc;
+  margin-bottom: 0;
 }
 
 .tab button {
@@ -121,8 +122,6 @@ hr{
   padding: 6px 12px;         
   border-top: none;
   margin: 0;
-  margin-right: -1.5px;
-  width: calc(100% + 1px);
 }
 .container {
   font-family: "Roboto Mono", serif;
