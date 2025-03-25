@@ -59,6 +59,13 @@ a:hover {
   color: yellow;
  
 }
+       
+hr{
+  height: 1px;
+  background-color: #ccc;
+  border: none;
+}
+
 
 /*Tab Styles*/
 .tab {
