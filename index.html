@@ -10,6 +10,25 @@
 </head>
 <body>
     <p data-scramble>Hover over me</p>
+    <p data-scramble data-scramble-chars="galactic">
+  Galactic Scramble
+    </p>
+
+<!-- Direct characters still work -->
+<p data-scramble data-scramble-chars="♠♣♥♦">
+  Card Symbols
+</p>
+<button data-scramble data-scramble-chars="galactic">
+  Galactic Scramble
+</button>
+
+<!-- Direct characters still work -->
+<p data-scramble data-scramble-chars="binary">
+  Binary Scramble
+</p>
+<p data-scramble data-scramble-chars="emoji">
+  Emoji Scramble
+</p>
 
 <!-- Custom color -->
 <div data-scramble data-scramble-color="#00ff00">Green scramble</div>
@@ -64,7 +83,9 @@
 <script src="tabs.js"></script>
 <script src="text-scrambler.js"></script>
 <script>
-var galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
+const galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
+const binary = "01";
+const emoji = "✨⭐🌟💫☄️🌠";
 document.getElementById("galactic").innerHTML = galactic;
 document.addEventListener('DOMContentLoaded', () => {
     const scrambleElements = document.querySelectorAll('[data-scramble]');
