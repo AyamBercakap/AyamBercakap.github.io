@@ -116,8 +116,10 @@ hr{
   color: white;
   padding: 5px 15px;
   border-radius: 5px;
-  display: inline-block;
+  display: block;
   max-width: 90%;
+  margin: 0 auto;
+  text-align: center;
   position: relative;
   word-wrap: break-word;
 }
