@@ -14,17 +14,17 @@
   <p data-scramble>Default symbols: !<>-_\/[]{}—=+*^?#________</p>
 
   <!-- 2. Custom Direct Characters -->
-  <div data-scramble data-scramble-chars="♠♣♥♦">Card symbols scramble</div>
+  <div data-scramble data-scramble-color="black" data-scramble-chars="♠♣♥♦">Card symbols scramble</div>
 
   <!-- 3. Variable Reference -->
-  <p data-scramble data-scramble-chars="galactic">Galactic characters</p>
+  <p data-scramble data-scramble-color="black" data-scramble-chars="galactic">Galactic characters</p>
 
   <!-- 4. Tab System Integration -->
   <div class="tab">
     <button class="tablinks active" 
             data-scramble 
             data-scramble-chars="binary"
-            data-scramble-color="white"
+            data-scramble-color="black"
             data-scramble-active-only
             onclick="openTab(event, 'WP')">
       Binary Mode (01)
@@ -32,6 +32,7 @@
     <button class="tablinks" 
             data-scramble 
             data-scramble-chars="emoji"
+            data-scramble-color="black"
             data-scramble-active-only
             onclick="openTab(event, 'EMOJI')">
       Emoji Mode
@@ -39,7 +40,7 @@
   </div>
 
   <div id="WP" class="tabcontent" style="display: block;">
-    <h3 data-scramble data-scramble-chars="binary">Binary Content</h3>
+    <h3 data-scramble data-scramble-color="black" data-scramble-chars="binary">Binary Content</h3>
     <a class="container" href="#" data-scramble>10101010</a>
   </div>
 
