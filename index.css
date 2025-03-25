@@ -66,6 +66,7 @@ a:hover {
   border: 1px solid #ccc;
   background-color: #FFB6C1;
   display: flex;
+  border-radius: 5px;
 }
 
 .tab button {
