@@ -122,6 +122,16 @@ hr{
   border-top: none;
   margin: 0;
 }
+/* Active tab scramble styles */
+.tab button.active[data-scramble] {
+  position: relative;
+}
+
+.tab button.active .scramble-char {
+  animation: 
+    scramble-pulse 0.8s infinite alternate,
+    scramble-drift 1.5s infinite alternate;
+}
 .container {
   font-family: "Roboto Mono", monospace;
   background-color: #82D1F1;
