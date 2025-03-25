@@ -9,53 +9,44 @@
     const emoji = "✨⭐🌟💫☄️🌠";
   </script>
 </head>
-<body>
-  <!-- 1. Default Scramble -->
-  <p data-scramble>Default symbols: !<>-_\/[]{}—=+*^?#________</p>
+<body style="background-color:black;">
+ <!-- Regular Scrambles -->
+<p data-scramble>Default symbols</p>
 
-  <!-- 2. Custom Direct Characters -->
-  <div data-scramble data-scramble-color="black" data-scramble-chars="♠♣♥♦">Card symbols scramble</div>
+<p data-scramble data-scramble-chars="galactic">Galactic text</p>
 
-  <!-- 3. Variable Reference -->
-  <p data-scramble data-scramble-color="black" data-scramble-chars="galactic">Galactic characters</p>
+<div data-scramble data-scramble-chars="♥♦♣♠">Cards</div>
 
-  <!-- 4. Tab System Integration -->
-  <div class="tab">
-    <button class="tablinks active" 
-            data-scramble 
-            data-scramble-chars="binary"
-            data-scramble-color="black"
-            data-scramble-active-only
-            onclick="openTab(event, 'WP')">
-      Binary Mode (01)
-    </button>
-    <button class="tablinks" 
-            data-scramble 
-            data-scramble-chars="emoji"
-            data-scramble-color="black"
-            data-scramble-active-only
-            onclick="openTab(event, 'EMOJI')">
-      Emoji Mode
-    </button>
-  </div>
+<!-- Tab System -->
+<div class="tab">
+  <button class="tablinks active" 
+          data-scramble 
+          data-scramble-chars="binary"
+          data-scramble-color="white"
+          data-scramble-active-only
+          onclick="openTab(event, 'BIN')">
+    Binary
+  </button>
+  
+  <button class="tablinks"
+          data-scramble
+          data-scramble-chars="arrows" 
+          data-scramble-active-only
+          onclick="openTab(event, 'ARROWS')">
+    Arrows
+  </button>
+</div>
 
-  <div id="WP" class="tabcontent" style="display: block;">
-    <h3 data-scramble data-scramble-color="black" data-scramble-chars="binary">Binary Content</h3>
-    <a class="container" href="#" data-scramble>10101010</a>
-  </div>
+<div id="BIN" class="tabcontent" style="display: block;">
+  <h3 data-scramble data-scramble-chars="binary">Binary Content</h3>
+  <p data-scramble data-scramble-chars="binary">10101011</p>
+</div>
 
-  <div id="EMOJI" class="tabcontent">
-    <h3 data-scramble data-scramble-chars="emoji">Emoji Content</h3>
-    <p data-scramble data-scramble-continuous>Continuous emoji scramble</p>
-  </div>
+<div id="ARROWS" class="tabcontent">
+  <h3 data-scramble data-scramble-chars="emoji">Arrow Content</h3>
+  <p data-scramble data-scramble-continuous>←→↑↓↔</p>
+</div>
 
-  <!-- 5. Special Cases -->
-  <div data-scramble 
-       data-scramble-chars="↑↓←→↔↕"
-       data-scramble-duration="300"
-       data-scramble-color="red">
-    Arrow scramble (faster)
-  </div>
 
   <!-- Load the scrambler last -->
   <script src="text-scrambler.js"></script>
