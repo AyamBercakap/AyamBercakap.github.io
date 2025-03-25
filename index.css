@@ -114,15 +114,16 @@ hr{
   font-family: "Roboto Mono", serif;
   background-color: #82D1F1;
   color: white;
-  padding: 5px 10px; /* Equal 10px left/right padding */
+  padding: 5px 10px;       /* 5px top/bottom, 10px left/right */
   border-radius: 5px;
-  display: block; /* Changed from inline-block */
+  display: block;          /* Changed to block for full width */
   position: relative;
-  width: calc(100% - 20px); /* Full width minus 10px on each side */
-  box-sizing: border-box; /* Include padding in width calculation */
-  margin: 0 auto; /* Center horizontally if parent has extra space */
+  width: calc(100% - 10px); /* Full width minus 10px right gap */
+  box-sizing: border-box;  /* Includes padding in width calculation */
+  margin-right: 10px;      /* Ensures 10px gap on the right */
 }
 
 .container:hover {
   background-color: #76bedb;
 }
+
