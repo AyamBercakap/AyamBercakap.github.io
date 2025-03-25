@@ -7,14 +7,33 @@ class TextScrambler {
     this.originalText = el.textContent;
     this.frameRequest = null;
     
-    // Configurable
+    // Configuration
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = el.dataset.scrambleColor || '#FFFFFF';
-    this.chars = el.dataset.scrambleChars || '!<>-_\\/[]{}—=+*^?#________';
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
     this.continuous = el.hasAttribute('data-scramble-continuous');
+    
+    // charset with 3 fallbacks
+    this.chars = this._resolveCharSet(el);
+  }
+
+  _resolveCharSet(el) {
+    const charSource = el.dataset.scrambleChars;
+    
+    // check if referring global vars
+    if (charSource && window[charSource]) {
+      return window[charSource];
+    }
+    
+    // check if it is a string
+    if (charSource && typeof charSource === 'string') {
+      return charSource;
+    }
+    
+    // Fall back to default symbol
+    return '!<>-_\\/[]{}—=+*^?#________';
   }
 
   setText(newText) {
@@ -69,7 +88,6 @@ class TextScrambler {
 
     if (complete === this.queue.length) {
       this.resolve();
-      // Restart if continuous
       if (this.continuous || (this.onlyActive && this.el.classList.contains('active'))) {
         requestAnimationFrame(() => this.setText(this.originalText));
       }
@@ -84,25 +102,27 @@ class TextScrambler {
   }
 }
 
-// Initialize
+// Initialize with all features
 document.addEventListener('DOMContentLoaded', () => {
   // Regular elements
   document.querySelectorAll('[data-scramble]').forEach(el => {
     const scrambler = new TextScrambler(el);
     
-    // Start continuous if requested
+    // Continuous animation
     if (el.hasAttribute('data-scramble-continuous')) {
       scrambler.setText(scrambler.originalText);
     }
     
-    // Hover handling
-    el.addEventListener('mouseenter', () => {
-      scrambler.setText(scrambler.originalText);
-    });
+    // Hover effect (unless disabled)
+    if (!el.hasAttribute('data-scramble-no-hover')) {
+      el.addEventListener('mouseenter', () => {
+        scrambler.setText(scrambler.originalText);
+      });
+    }
   });
 
-  // Tab system
-  const tabButtons = document.querySelectorAll('.tab button');
+  // Tab system integration
+  const tabButtons = document.querySelectorAll('.tab button[data-scramble]');
   tabButtons.forEach(button => {
     const scrambler = new TextScrambler(button);
     
@@ -111,18 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
       tabButtons.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
       
-      // Restart animation for new active tab
-      const newScrambler = new TextScrambler(this);
-      newScrambler.setText(newScrambler.originalText);
+      // Re-scramble with proper character set
+      new TextScrambler(this).setText(this.textContent);
       
-      // Call original openTab if exists
+      // Call original tab handler if exists
       if (typeof openTab === 'function') {
         const tabName = this.onclick.toString().match(/'([^']+)'/)[1];
         openTab(e, tabName);
       }
     });
 
-    // Initial active tab
+    // Initialize active tab
     if (button.classList.contains('active')) {
       scrambler.setText(scrambler.originalText);
     }
