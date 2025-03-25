@@ -64,13 +64,12 @@
 <script src="tabs.js"></script>
 <script src="text-scrambler.js"></script>
 <script>
-        // Initialize text scrambler if you have elements with data-text-scramble
-        const scrambleElements = document.querySelectorAll('[data-text-scramble]');
-        scrambleElements.forEach((element) => {
-            new TextScramble(element);
-        });
+document.addEventListener('DOMContentLoaded', () => {
+    const scrambleElements = document.querySelectorAll('[data-scramble]');
+    scrambleElements.forEach((element) => {
+        new TextScrambler(element);
+    });
+});
 </script>
-<script src="tabs.js"></script>
-<script src="text-scrambler.js"></script>
 </body>
 </html>
