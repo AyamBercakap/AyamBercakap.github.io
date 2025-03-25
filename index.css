@@ -111,17 +111,16 @@ hr{
 }
 
 .container {
-  font-family: "Roboto Mono", monospace;
+  font-family: "Roboto Mono", serif;
   background-color: #82D1F1;
   color: white;
-  padding: 5px 15px; /* Equal left and right padding */
+  padding: 5px 10px; /* Equal left/right padding */
+  margin: 0 10px; /* Equal left/right margins */
   border-radius: 5px;
-  display: block;
-  width: fit-content; /* Ensures the container wraps around the content */
-  margin: 0 auto; /* Centers the container */
-  text-align: center;
+  display: inline-block;
   position: relative;
-  word-wrap: break-word; /* Prevents text overflow */
+  width: auto; /* Let content determine width */
+  box-sizing: border-box; /* Include padding in width calculation */
 }
 
 .container:hover {
