@@ -4,16 +4,14 @@ class TextScrambler {
     this.frame = 0;
     this.queue = [];
     this.resolve = null;
-    this.originalText = el.textContent;
+    this.originalText = el.textContent.trim();
     this.frameRequest = null;
     
-    // Character set handling
     const charSource = el.dataset.scrambleChars;
     this.chars = charSource 
       ? (window[charSource] || charSource)
       : '!<>-_\\/[]{}—=+*^?#________';
     
-    // Config
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
@@ -30,9 +28,7 @@ class TextScrambler {
       this.resolve = () => {
         resolve();
         this.isScrambling = false;
-        if (this.continuous) {
-          this._queueNextScramble();
-        }
+        if (this.continuous) this._queueNextScramble();
       };
       
       this.queue = [];
@@ -96,17 +92,26 @@ class TextScrambler {
   }
 }
 
-// Initialize
+// Initialize with tab button support
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
     const scrambler = new TextScrambler(el);
-    
-    el.addEventListener('mouseenter', () => {
+    el.scrambler = scrambler;
+
+    // Only add hover effect to non-tab elements
+    if (!el.closest('.tab')) {
+      el.addEventListener('mouseenter', () => {
+        scrambler.setText(scrambler.originalText);
+      });
+    }
+
+    // Initialize active tab
+    if (el.classList.contains('active') && el.closest('.tab')) {
       scrambler.setText(scrambler.originalText);
-    });
-    
+    }
+
     if (el.hasAttribute('data-scramble-continuous')) {
       scrambler.setText(scrambler.originalText);
     }
   });
-});
+});s
