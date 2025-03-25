@@ -1,7 +1,6 @@
 /* Base scramble styles */
 [data-scramble] {
   display: inline-block;
-  position: relative;
 }
 
 .scramble-char {
@@ -46,7 +45,7 @@ body {
   color:white;
 }
 h1, h2, h3 {
-  font-family: "Roboto Mono", serif;
+  font-family: "Roboto Mono", monospace;
 }
  
 a {
@@ -124,7 +123,7 @@ hr{
   margin: 0;
 }
 .container {
-  font-family: "Roboto Mono", serif;
+  font-family: "Roboto Mono", monospace;
   background-color: #82D1F1;
   color: white;
   padding: 5px 10px;           /* Equal 10px left/right padding */
