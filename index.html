@@ -1,115 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:wght@700&family=Roboto+Mono:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="index.css">
-    <title>Dani's Website</title>
+  <script>
+    // Define mapping variables
+    const gameMappings = "w:↑←→↓, a:🅰🅱🅾, d:🕹🎮👾";
+    const colorSymbols = {
+      "r": "🔴🟥",
+      "g": "🟢🟩",
+      "b": "🔵🟦"
+    };
+  </script>
 </head>
 <body>
-    <!-- Using string variable -->
-<p data-scramble data-scramble-mappings="a:😀, b:😎, c:🤖">
-  abc
-</p>
+  <!-- String variable mapping -->
+  <p data-scramble data-scramble-mappings="$gameMappings">
+    WASD controls
+  </p>
 
-<!-- Using object variable -->
-<p data-scramble data-scramble-mappings="a: ᔑ,b: ʖ,c: ᓵ">
-  abc
-</p>
-    <p data-scramble data-scramble-mappings="$testMappings">
-  Uses testMappings variable
-</p>
-    <p data-scramble>Hover over me</p>
-    <p data-scramble data-scramble-chars="galactic">
-  Galactic Scramble
-    </p>
+  <!-- Object variable mapping -->
+  <div data-scramble data-scramble-mappings="$colorSymbols">
+    RGB colors
+  </div>
 
-<!-- Direct characters still work -->
-<p data-scramble data-scramble-chars="♠♣♥♦">
-  Card Symbols
-</p>
-<button data-scramble data-scramble-chars="galactic">
-  Galactic Scramble
-</button>
+  <!-- Mixed usage -->
+  <button data-scramble 
+          data-scramble-chars="★☆✯"
+          data-scramble-mappings="c:$colorSymbols">
+    Click ★☆✯
+  </button>
 
-<!-- Direct characters still work -->
-<p data-scramble data-scramble-chars="binary">
-  Binary Scramble
-</p>
-<p data-scramble data-scramble-chars="emoji">
-  Emoji Scramble
-</p>
-
-<!-- Custom color -->
-<div data-scramble data-scramble-color="#00ff00">Green scramble</div>
-<div data-scramble data-scramble-chars="galactic">different charset</div>
-<!-- Custom duration -->
-<a href="#" data-scramble data-scramble-duration="200">Fast link</a>
-<p data-scramble data-scramble-continuous>Always scrambling!</p>
-<!-- Custom color + duration -->
-<span data-scramble 
-       data-scramble-color="red" 
-       data-scramble-duration="800">
-  Red slow scramble
-</span>
-<div data-scramble data-scramble-color="#00ff00">Green scramble</div>
-<h1>My Projects</h1>
-<p data-scramble data-scramble-duration="400">Click on the buttons inside the tabbed menu:</p>
-<p data-scramble data-scramble-color="#FF0000">Red scramble</p>
-
-<div class="tab">
-  <button class="tablinks active" 
-        data-scramble 
-        data-scramble-color="white"
-        data-scramble-active-only
-        onclick="openTab(event, 'WP')">
-  Web Programming
-</button>
-  <button data-scramble-chars="▁▂▃▄▅▆▇█" class="tablinks" onclick="openTab(event, 'OODI')">OODI</button>
-  <button class="tablinks" onclick="openTab(event, 'DCN')">DataCom</button>
-  <button class="tablinks" onclick="openTab(event, 'GUI')">GUI</button>
-</div>
-
-<div id="WP" class="tabcontent" style="display: block;">
-  <h3>Web Programming</h3>
-  <a class="container" href="Web Programming/Lab 1 C.html" data-scramble>Lab 1 C</a> <hr />
-  <a class="container" href="Lab 1 C.html">Lab 1 C</a>
-</div>
-
-<div id="OODI" class="tabcontent">
-  <h3>Object Oriented Design & Implementation</h3>
-</div>
-
-<div id="DCN" class="tabcontent">
-  <h3>Data Communication & Networking</h3>
-  <p>Coming Soon!</p>
-</div>
-<div id="GUI" class="tabcontent">
-  <h3>Graphical User Interface</h3>
-  <p>Coming Soon!</p>
-</div>
-
-<!-- Load JavaScript files at the end of the body -->
-<script src="tabs.js"></script>
-<script src="text-scrambler.js"></script>
-<script>
-const galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
-const binary = "01";
-const emoji = "😀😎🤖👾🎮";
-const testMappings = "a:😀, b:😎, c:🤖";
-const advancedMappings = {
-  "a": "ᔑ",
-  "b": "ʖ",
-  "c": "ᓵ"
-}
-document.addEventListener('DOMContentLoaded', () => {
-    const scrambleElements = document.querySelectorAll('[data-scramble]');
-    scrambleElements.forEach((element) => {
-        new TextScrambler(element);
-    });
-});
-</script>
+  <script src="text-scrambler.js"></script>
 </body>
 </html>
