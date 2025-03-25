@@ -114,14 +114,14 @@ hr{
   font-family: "Roboto Mono", monospace;
   background-color: #82D1F1;
   color: white;
-  padding: 5px 15px;
+  padding: 5px 15px; /* Equal left and right padding */
   border-radius: 5px;
   display: block;
-  max-width: 90%;
-  margin: 0 auto;
+  width: fit-content; /* Ensures the container wraps around the content */
+  margin: 0 auto; /* Centers the container */
   text-align: center;
   position: relative;
-  word-wrap: break-word;
+  word-wrap: break-word; /* Prevents text overflow */
 }
 
 .container:hover {
