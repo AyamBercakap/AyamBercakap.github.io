@@ -100,6 +100,7 @@ a:hover {
   font-family: "Roboto Condensed", serif;
   background-color: #101414;
   color: white;
+  border-radius: 5px;
 }
 
 .container {
