@@ -14,6 +14,7 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = el.dataset.scrambleColor || '#FFD700';
     this.onlyActive = el.hasAttribute('data-scramble-active-only');
+    this.continuous = el.hasAttribute('data-scramble-continuous');
   }
 
   setText(newText) {
@@ -68,6 +69,10 @@ class TextScrambler {
 
     if (complete === this.queue.length) {
       this.resolve();
+      // Restart if continuous
+      if (this.continuous || (this.onlyActive && this.el.classList.contains('active'))) {
+        requestAnimationFrame(() => this.setText(this.originalText));
+      }
     } else {
       this.frameRequest = requestAnimationFrame(this.update.bind(this));
       this.frame++;
@@ -79,33 +84,34 @@ class TextScrambler {
   }
 }
 
-// Initialize all elements
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
   // Regular elements
   document.querySelectorAll('[data-scramble]').forEach(el => {
-    if (!el.closest('.tab')) { // Skip tab buttons
-      const scrambler = new TextScrambler(el);
-      el.addEventListener('mouseenter', () => scrambler.setText(scrambler.originalText));
+    const scrambler = new TextScrambler(el);
+    
+    // Start continuous if requested
+    if (el.hasAttribute('data-scramble-continuous')) {
+      scrambler.setText(scrambler.originalText);
     }
+    
+    // Hover handling
+    el.addEventListener('mouseenter', () => {
+      scrambler.setText(scrambler.originalText);
+    });
   });
 
-  // Tab buttons
-  const tabButtons = document.querySelectorAll('.tab [data-scramble]');
+  // Tab system
+  const tabButtons = document.querySelectorAll('.tab button');
   tabButtons.forEach(button => {
     const scrambler = new TextScrambler(button);
     
-    button.addEventListener('mouseenter', () => {
-      if (button.classList.contains('active')) {
-        scrambler.setText(scrambler.originalText);
-      }
-    });
-
     button.addEventListener('click', function(e) {
       // Update active state
       tabButtons.forEach(btn => btn.classList.remove('active'));
       this.classList.add('active');
       
-      // Trigger scramble
+      // Restart animation for new active tab
       const newScrambler = new TextScrambler(this);
       newScrambler.setText(newScrambler.originalText);
       
