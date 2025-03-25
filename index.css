@@ -120,7 +120,7 @@ hr{
   padding: 6px 12px;         
   border-top: none;
   margin: 0 -2px;
-  width: calc(100% + 2px);
+  width: calc(100% + 1px);
 }
 .container {
   font-family: "Roboto Mono", serif;
