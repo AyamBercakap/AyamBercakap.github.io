@@ -1,23 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- Your existing head content -->
   <script>
-    // Define custom character sets (optional)
-    const galactic = "ᔑʖᓵ↸ᒷ⎓⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡";
-    const binary = "01";
-    const emoji = "✨⭐🌟💫☄️🌠";
+    // MUST be in global scope - no const/let!
+    var galactic = "ᔑʖᓵ↸ᒷ⎓⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡";
+    var binary = "01";
+    var arrows = "↑↓←→↔↕";
   </script>
 </head>
-<body style="background-color:black;">
- <!-- Regular Scrambles -->
-<p data-scramble>Default symbols</p>
+<body style = "background-color:black;">
 
-<p data-scramble data-scramble-chars="galactic">Galactic text</p>
-
-<div data-scramble data-scramble-chars="♥♦♣♠">Cards</div>
-
-<!-- Tab System -->
+<!-- TAB SYSTEM - MUST HAVE THESE CLASSES -->
 <div class="tab">
   <button class="tablinks active" 
           data-scramble 
@@ -30,25 +23,25 @@
   
   <button class="tablinks"
           data-scramble
-          data-scramble-chars="arrows" 
+          data-scramble-chars="galactic"
           data-scramble-active-only
-          onclick="openTab(event, 'ARROWS')">
-    Arrows
+          onclick="openTab(event, 'GAL')">
+    Galactic
   </button>
 </div>
 
+<!-- TAB CONTENT - MUST MATCH TAB IDs -->
 <div id="BIN" class="tabcontent" style="display: block;">
-  <h3 data-scramble data-scramble-chars="binary">Binary Content</h3>
   <p data-scramble data-scramble-chars="binary">10101011</p>
 </div>
 
-<div id="ARROWS" class="tabcontent">
-  <h3 data-scramble data-scramble-chars="emoji">Arrow Content</h3>
-  <p data-scramble data-scramble-continuous>←→↑↓↔</p>
+<div id="GAL" class="tabcontent">
+  <p data-scramble data-scramble-chars="galactic">Galactic text</p>
 </div>
 
+<!-- LOAD IN THIS EXACT ORDER -->
+<script src="tabs.js"></script>
+<script src="text-scrambler.js"></script>
 
-  <!-- Load the scrambler last -->
-  <script src="text-scrambler.js"></script>
 </body>
 </html>
