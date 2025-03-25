@@ -11,12 +11,12 @@
 <body>
     <!-- Using string variable -->
 <p data-scramble data-scramble-mappings="$testMappings">
-  Scramble using testMappings variable
+  abc
 </p>
 
 <!-- Using object variable -->
 <p data-scramble data-scramble-mappings="$advancedMappings">
-  Scramble using advancedMappings object
+  abc
 </p>
     <p data-scramble data-scramble-mappings="$testMappings">
   Uses testMappings variable
@@ -98,11 +98,11 @@
 const galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
 const binary = "01";
 const emoji = "😀😎🤖👾🎮";
-const testMappings = "a:123, b:456, c:789";
+const testMappings = "a:😀, b:😎, c:🤖";
 const advancedMappings = {
-  "a": "αβγ",
-  "b": "♠♥♦",
-  "c": "↑→↓←"
+  "a": "ᔑ",
+  "b": "ʖ",
+  "c": "ᓵ"
 }
 document.addEventListener('DOMContentLoaded', () => {
     const scrambleElements = document.querySelectorAll('[data-scramble]');
