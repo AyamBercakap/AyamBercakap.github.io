@@ -114,13 +114,13 @@ hr{
   font-family: "Roboto Mono", serif;
   background-color: #82D1F1;
   color: white;
-  padding: 5px 10px; /* Equal left/right padding */
-  margin: 0 10px; /* Equal left/right margins */
+  padding: 5px 10px; /* Equal 10px left/right padding */
   border-radius: 5px;
-  display: inline-block;
+  display: block; /* Changed from inline-block */
   position: relative;
-  width: auto; /* Let content determine width */
+  width: calc(100% - 20px); /* Full width minus 10px on each side */
   box-sizing: border-box; /* Include padding in width calculation */
+  margin: 0 auto; /* Center horizontally if parent has extra space */
 }
 
 .container:hover {
