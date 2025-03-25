@@ -13,7 +13,7 @@
 
 <!-- Custom color -->
 <div data-scramble data-scramble-color="#00ff00">Green scramble</div>
-<div data-scramble data-scramble-chars="▁▂▃▄▅▆▇█">different charset</div>
+<div data-scramble data-scramble-chars="galactic">different charset</div>
 <!-- Custom duration -->
 <a href="#" data-scramble data-scramble-duration="200">Fast link</a>
 <p data-scramble data-scramble-continuous>Always scrambling!</p>
@@ -64,6 +64,8 @@
 <script src="tabs.js"></script>
 <script src="text-scrambler.js"></script>
 <script>
+var galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
+document.getElementById("galactic").innerHTML = galactic;
 document.addEventListener('DOMContentLoaded', () => {
     const scrambleElements = document.querySelectorAll('[data-scramble]');
     scrambleElements.forEach((element) => {
