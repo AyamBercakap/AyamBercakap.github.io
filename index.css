@@ -62,7 +62,7 @@ a:hover {
        
 hr{
   height: 1px;
-  background-color: #ccc;
+  background-color: none;
   border: none;
 }
 
