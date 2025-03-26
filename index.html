@@ -1,47 +1,51 @@
 <!DOCTYPE html>
- 
 <html>
- 
 <body style="background-color:black;">
- 
-<script>
- 
-  window.myMap = "a:🚄🚅🚝, b:🌏🌎🌍🪐🌌";
-  window.localMap = "e:🚗🚓🚕🛺"; // Won't work (use window.)
- 
-</script>
- 
-<p data-scramble scramble-case scramble-spc scramble-mappings="$localMap" style="color:white;">e&nbsp;&nbsp;E</p>
- 
-<p data-scramble scramble-case scramble-spc scramble-mappings="$myMap" style="color:white;">b&nbsp;&nbsp;B&nbsp;&nbsp;a&nbsp;&nbsp;A</p>
- 
-</button>
- 
-<script src="text-scrambler.js"></script>
- 
-  <script src="tabs.js"></script>
- 
 
- 
-  <!-- Initialize tab scramblers -->
- 
-  <script>
+<script>
+  window.myMap = "a:🚄🚅🚝, b:🌏🌎🌍🪐🌌";
+  window.localMap = "e:🚗🚓🚕🛺";
+</script>
+
+<!-- 
+  Updated attributes:
+  - scramble-case="true" to enable case insensitivity
+  - scramble-spc="false" to skip spaces (removed to scramble spaces)
+  - scramble-mappings uses variables ($localMap)
+-->
+<p data-scramble 
+   scramble-case="true" 
+   scramble-mappings="$localMap" 
+   scramble-spc="false"
+   style="color:white;">
+   e&nbsp;&nbsp;E
+</p>
+
+<p data-scramble 
+   scramble-case="true" 
+   scramble-mappings="$myMap" 
+   style="color:white;">
+   b&nbsp;&nbsp;B&nbsp;&nbsp;a&nbsp;&nbsp;A
+</p>
+
+<script src="text-scrambler.js"></script>
+<script src="tabs.js"></script>
+
+<!-- Initialize tab scramblers -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Update variable references before initialization
+    document.querySelector('[data-scramble][scramble-mappings="$localMap"]')
+      .setAttribute('scramble-mappings', window.localMap);
+    document.querySelector('[data-scramble][scramble-mappings="$myMap"]')
+      .setAttribute('scramble-mappings', window.myMap);
     
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelector('[data-scramble-mappings="$localMap"]').setAttribute('data-scramble-mappings', window.localMap);
-      document.querySelector('[data-scramble-mappings="$myMap"]').setAttribute('data-scramble-mappings', window.myMap);
-      const activeTab = document.querySelector('.tablinks.active[data-scramble]');
- 
-      if (activeTab && activeTab.scrambler) {
- 
-        activeTab.scrambler.setText(activeTab.scrambler.originalText);
- 
-      }
- 
-    });
- 
-  </script>
- 
+    const activeTab = document.querySelector('.tablinks.active[data-scramble]');
+    if (activeTab && activeTab.scrambler) {
+      activeTab.scrambler.setText(activeTab.scrambler.originalText);
+    }
+  });
+</script>
+
 </body>
- 
 </html>
