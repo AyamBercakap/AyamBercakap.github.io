@@ -4,12 +4,12 @@ class TextScrambler {
     this.frame = 0;
     this.queue = [];
     this.resolve = null;
-    this.originalText = el.textContent;
     this.originalHTML = el.innerHTML;
+    this.originalText = this.extractTextContent(el.innerHTML); // Extract text while converting <br> to \n
     this.frameRequest = null;
     
     // Configurable with case-insensitive attribute support
-    this.ignoreSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'false'; // Only skip spaces when scramble-spc="false"
+    this.ignoreSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'false';
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
@@ -18,7 +18,7 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
     this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = this.getCaseInsensitiveAttr('scramble-case') === 'true'; // Only enable when scramble-case="true"
+    this.ignoreCase = this.getCaseInsensitiveAttr('scramble-case') === 'true';
     this.isScrambling = false;
     
     // Initialize immediately for continuous effect
@@ -30,6 +30,13 @@ class TextScrambler {
     if (!this.continuous && !el.closest('.tab')) {
       el.addEventListener('mouseenter', () => this.triggerScramble());
     }
+  }
+
+  // Extract text while converting <br> to \n and &nbsp; to space
+  extractTextContent(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html.replace(/<br\s*\/?>/gi, '\n'); // Convert <br> to newlines
+    return (div.textContent || div.innerText || '').replace(/\u00A0/g, ' '); // Convert &nbsp; to spaces
   }
 
   // Case-insensitive attribute helpers
@@ -66,7 +73,7 @@ class TextScrambler {
     return null;
   }
 
-  // mapping with case-insensitive support when data-case exists
+  // mapping with case-insensitive support when scramble-case="true"
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     if (mappingString.startsWith('$')) {
@@ -91,15 +98,16 @@ class TextScrambler {
           mappings[char.toLowerCase()] = charset;
           mappings[char.toUpperCase()] = charset;
         }
-        mappings[char] = charset; // Always include exact match
+        mappings[char] = charset;
       }
     });
     return mappings;
   }
 
-  //skip space and &nbsp when scramble-spc="false"
+  //skip space, &nbsp; and newlines when scramble-spc="false" or preserveLineBreaks
   shouldSkipScramble(char) {
-    return this.ignoreSpaces && (char === ' ' || char === '\u00A0');
+    return (this.ignoreSpaces && (char === ' ' || char === '\u00A0')) || 
+           char === '\n'; // Always preserve newlines
   }
 
   triggerScramble() {
@@ -114,12 +122,12 @@ class TextScrambler {
     }
   }
 
-  // scramble handler
+  // scramble handler with automatic line break preservation
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
     this.isScrambling = true;
-    const oldText = this.el.textContent;
+    const oldText = this.extractTextContent(this.el.innerHTML);
     
     return new Promise(resolve => {
       this.resolve = () => {
@@ -161,49 +169,51 @@ class TextScrambler {
 
   // Modified to apply case-insensitivity when scramble-case="true"
   getCharsForChar(char) {
-    // Get target character based on case sensitivity
     const targetChar = this.ignoreCase ? char.toLowerCase() : char;
     
-    // Check the mapping
     if (this.charMappings[char]) {
       return this.charMappings[char];
     }
     
-    // case insensitive for mapping
     if (this.ignoreCase && this.charMappings[targetChar]) {
       return this.charMappings[targetChar];
     }
     
     const charset = this.globalChars || this.defaultChars;
     
-    // case insensitive for global variable/ pre set or default
     if (this.ignoreCase) {
       return charset;
     }
     
-    //case sensitive
     return charset;
   }
 
   update() {
-    let output = '';
+    let output = this.originalHTML;
     let complete = 0;
+    let textPos = 0;
 
     for (let i = 0; i < this.queue.length; i++) {
       const { from, to, start, end, chars } = this.queue[i];
       let char = this.queue[i].char;
 
+      // Find next text node position in HTML
+      const fromPos = output.indexOf(from, textPos);
+      if (fromPos === -1) continue;
+
       if (this.frame >= end) {
         complete++;
-        output += to;
+        output = output.substring(0, fromPos) + to + output.substring(fromPos + 1);
+        textPos = fromPos + 1;
       } else if (this.frame >= start && chars) {
         if (!char || Math.random() < 0.28) {
           char = this.randomChar(chars);
           this.queue[i].char = char;
         }
-        output += `<span class="scramble-char" style="color:${this.scrambleColor}">${char}</span>`;
-      } else {
-        output += from;
+        output = output.substring(0, fromPos) + 
+                `<span class="scramble-char" style="color:${this.scrambleColor}">${char}</span>` + 
+                output.substring(fromPos + 1);
+        textPos = fromPos + 1;
       }
     }
 
