@@ -9,15 +9,16 @@ class TextScrambler {
     this.frameRequest = null;
     
     // Configurable
-    this.ignoreSpaces = el.hasAttribute('scramble-spc');
-    this.charMappings = this.parseCharMappings(el.getAttribute('scramble-mappings'));
-    this.globalChars = this.resolveCharset(el.getAttribute('scramble-chars'));
+    this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc');
+    this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
+    this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
-    this.duration = parseInt(el.getAttribute('scramble-duration')) || 600;
+    this.duration = parseInt(this.getCaseInsensitiveAttr('scramble-duration')) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
-    this.scrambleColor = el.getAttribute('scramble-color') || '#FFFFFF';
-    this.continuous = el.hasAttribute('scramble-continuous');
+    this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
+    this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
+    this.ignoreCase = el.hasAttribute('scramble-case');
     this.isScrambling = false;
     
     // continuous fx
@@ -29,6 +30,20 @@ class TextScrambler {
     if (!this.continuous && !el.closest('.tab')) {
       el.addEventListener('mouseenter', () => this.triggerScramble());
     }
+  }
+
+  // Case-insensitive attribute helpers
+  hasCaseInsensitiveAttr(attrName) {
+    return this.el.getAttributeNames().some(attr => 
+      attr.toLowerCase() === attrName.toLowerCase()
+    );
+  }
+
+  getCaseInsensitiveAttr(attrName) {
+    const foundAttr = this.el.getAttributeNames().find(attr => 
+      attr.toLowerCase() === attrName.toLowerCase()
+    );
+    return foundAttr ? this.el.getAttribute(foundAttr) : null;
   }
 
   // charset & charset variables
@@ -50,7 +65,8 @@ class TextScrambler {
     }
     return null;
   }
-  // mapping aka specific characters scramble to another specific characters (can be set manually or as a variable)
+
+  // mapping with optional case-insensitivity
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     if (mappingString.startsWith('$')) {
@@ -69,16 +85,17 @@ class TextScrambler {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
         const charset = this.resolveCharset(set);
-        mappings[char.toLowerCase()] = charset;
-        mappings[char.toUpperCase()] = charset;
-        if (char !== char.toLowerCase() && char !== char.toUpperCase()) {
-          mappings[char] = charset;
+        if (this.ignoreCase) {
+          mappings[char.toLowerCase()] = charset;
+          mappings[char.toUpperCase()] = charset;
         }
+        mappings[char] = charset;
       }
     });
     return mappings;
   }
-//skip space and &nbsp
+
+  //skip space and &nbsp
   shouldSkipScramble(char) {
     return this.ignoreSpaces && (char === ' ' || char === '\u00A0');
   }
@@ -94,7 +111,8 @@ class TextScrambler {
       });
     }
   }
-// scramble handler
+
+  // scramble handler
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
@@ -138,13 +156,17 @@ class TextScrambler {
       this.update();
     });
   }
-//ignore case
+
+  // character lookup with optional case-insensitivity
   getCharsForChar(char) {
-    return this.charMappings[char] || 
-           this.charMappings[char.toLowerCase()] || 
-           this.charMappings[char.toUpperCase()] || 
-           this.globalChars || 
-           this.defaultChars;
+    if (this.ignoreCase) {
+      return this.charMappings[char] || 
+             this.charMappings[char.toLowerCase()] || 
+             this.charMappings[char.toUpperCase()] || 
+             this.globalChars || 
+             this.defaultChars;
+    }
+    return this.charMappings[char] || this.globalChars || this.defaultChars;
   }
 
   update() {
