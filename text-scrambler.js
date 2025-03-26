@@ -8,7 +8,7 @@ class TextScrambler {
     this.originalHTML = el.innerHTML;
     this.frameRequest = null;
     
-    // Configurable with case-insensitive attribute support
+    // Configurable
     this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc');
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
@@ -18,7 +18,7 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
     this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = el.hasAttribute('data-case'); // Global case-insensitivity flag
+    this.ignoreCase = el.hasAttribute('scramble-case'); // Global case-insensitivity flag
     this.isScrambling = false;
     
     // Initialize immediately for continuous effect
@@ -58,17 +58,14 @@ class TextScrambler {
 
   getGlobalVariable(name) {
     try {
-      // First check for window (browser)
+      // Check for variable in window (browser), globalThis (universal), and global (Node)
       if (typeof window !== 'undefined' && window[name]) return window[name];
-      // Then check for globalThis (universal)
       if (typeof globalThis !== 'undefined' && globalThis[name]) return globalThis[name];
-      // Support for Node.js or other environments
       if (typeof global !== 'undefined' && global[name]) return global[name];
     } catch (e) {
-      console.warn(`Failed to access global variable ${name}:`, e);
+      console.warn(`Scrambler: Error accessing variable ${name}:`, e);
       return null;
     }
-    console.warn(`Global variable ${name} not found`);
     return null;
   }
 
@@ -76,17 +73,25 @@ class TextScrambler {
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     
-    // Handle variable references in mappings
+    // Handle variable references (e.g., "$myMap")
     if (mappingString.startsWith('$')) {
       const varName = mappingString.substring(1);
       const varValue = this.getGlobalVariable(varName);
       
-      // If variable is a string, parse it as mappings
-      if (typeof varValue === 'string') return this.parseDirectMappings(varValue);
-      // If variable is already an object, use it directly
-      if (typeof varValue === 'object') return varValue;
-      // Fallback to empty mappings if variable not found
-      console.warn(`Mapping variable ${varName} not found or invalid`);
+      if (varValue === null) {
+        console.warn(`Scrambler: Mapping variable $${varName} not found`);
+        return {};
+      }
+      
+      // If variable contains a string mapping (e.g., "a:🚗, b:🚕"), parse it
+      if (typeof varValue === 'string') {
+        return this.parseDirectMappings(varValue);
+      }
+      // If it's already a prepared mapping object, use it directly
+      else if (typeof varValue === 'object' && varValue !== null) {
+        return varValue;
+      }
+      
       return {};
     }
     
@@ -98,7 +103,7 @@ class TextScrambler {
     const mappings = {};
     if (!mappingString) return mappings;
     
-    // Process each key:value pair
+    // Process each key:value pair in the mapping string
     mappingString.split(',').forEach(pair => {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
