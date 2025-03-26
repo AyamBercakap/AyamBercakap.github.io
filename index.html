@@ -7,38 +7,34 @@
   window.localMap = "e:🚗🚓🚕🛺";
 </script>
 
-<!-- 
-  Updated attributes:
-  - scramble-case="true" to enable case insensitivity
-  - scramble-spc="false" to skip spaces (removed to scramble spaces)
-  - scramble-mappings uses variables ($localMap)
--->
 <p data-scramble 
-   scramble-case="true" 
-   scramble-mappings="$localMap" 
+   scramble-case="true"
    scramble-spc="false"
+   scramble-mappings="$localMap" 
    style="color:white;">
-   e&nbsp;&nbsp;E
+   e  E
 </p>
 
 <p data-scramble 
-   scramble-case="true" 
+   scramble-case="true"
+   scramble-spc="false"
    scramble-mappings="$myMap" 
    style="color:white;">
-   b&nbsp;&nbsp;B&nbsp;&nbsp;a&nbsp;&nbsp;A
+   b  B  a  A
 </p>
 
 <script src="text-scrambler.js"></script>
 <script src="tabs.js"></script>
 
-<!-- Initialize tab scramblers -->
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Update variable references before initialization
-    document.querySelector('[data-scramble][scramble-mappings="$localMap"]')
-      .setAttribute('scramble-mappings', window.localMap);
-    document.querySelector('[data-scramble][scramble-mappings="$myMap"]')
-      .setAttribute('scramble-mappings', window.myMap);
+    document.querySelectorAll('[data-scramble]').forEach(el => {
+      const mappings = el.getAttribute('scramble-mappings');
+      if (mappings && mappings.startsWith('$')) {
+        const varName = mappings.substring(1);
+        el.setAttribute('scramble-mappings', window[varName]);
+      }
+    });
     
     const activeTab = document.querySelector('.tablinks.active[data-scramble]');
     if (activeTab && activeTab.scrambler) {
