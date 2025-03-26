@@ -8,8 +8,8 @@ class TextScrambler {
     this.originalHTML = el.innerHTML;
     this.frameRequest = null;
     
-    // Configurable
-    this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc');
+    // Configurable with case-insensitive attribute support
+    this.ignoreSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'false'; // Only skip spaces when scramble-spc="false"
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
@@ -18,7 +18,7 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
     this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = el.hasAttribute('scramble-case'); // Global case-insensitivity flag
+    this.ignoreCase = this.getCaseInsensitiveAttr('scramble-case') === 'true'; // Only enable when scramble-case="true"
     this.isScrambling = false;
     
     // Initialize immediately for continuous effect
@@ -58,12 +58,9 @@ class TextScrambler {
 
   getGlobalVariable(name) {
     try {
-      // Check for variable in window (browser), globalThis (universal), and global (Node)
       if (typeof window !== 'undefined' && window[name]) return window[name];
       if (typeof globalThis !== 'undefined' && globalThis[name]) return globalThis[name];
-      if (typeof global !== 'undefined' && global[name]) return global[name];
     } catch (e) {
-      console.warn(`Scrambler: Error accessing variable ${name}:`, e);
       return null;
     }
     return null;
@@ -72,30 +69,13 @@ class TextScrambler {
   // mapping with case-insensitive support when data-case exists
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
-    
-    // Handle variable references (e.g., "$myMap")
     if (mappingString.startsWith('$')) {
       const varName = mappingString.substring(1);
       const varValue = this.getGlobalVariable(varName);
-      
-      if (varValue === null) {
-        console.warn(`Scrambler: Mapping variable $${varName} not found`);
-        return {};
-      }
-      
-      // If variable contains a string mapping (e.g., "a:🚗, b:🚕"), parse it
-      if (typeof varValue === 'string') {
-        return this.parseDirectMappings(varValue);
-      }
-      // If it's already a prepared mapping object, use it directly
-      else if (typeof varValue === 'object' && varValue !== null) {
-        return varValue;
-      }
-      
+      if (typeof varValue === 'string') return this.parseDirectMappings(varValue);
+      if (typeof varValue === 'object') return varValue;
       return {};
     }
-    
-    // Handle direct mapping strings
     return this.parseDirectMappings(mappingString);
   }
 
@@ -103,24 +83,21 @@ class TextScrambler {
     const mappings = {};
     if (!mappingString) return mappings;
     
-    // Process each key:value pair in the mapping string
     mappingString.split(',').forEach(pair => {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
         const charset = this.resolveCharset(set);
-        // Handle case insensitivity if enabled
         if (this.ignoreCase) {
           mappings[char.toLowerCase()] = charset;
           mappings[char.toUpperCase()] = charset;
         }
-        // Always include exact match
-        mappings[char] = charset;
+        mappings[char] = charset; // Always include exact match
       }
     });
     return mappings;
   }
 
-  //skip space and &nbsp
+  //skip space and &nbsp when scramble-spc="false"
   shouldSkipScramble(char) {
     return this.ignoreSpaces && (char === ' ' || char === '\u00A0');
   }
@@ -182,7 +159,7 @@ class TextScrambler {
     });
   }
 
-  // Modified to apply case-insensitivity globally
+  // Modified to apply case-insensitivity when scramble-case="true"
   getCharsForChar(char) {
     // Get target character based on case sensitivity
     const targetChar = this.ignoreCase ? char.toLowerCase() : char;
