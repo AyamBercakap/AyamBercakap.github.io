@@ -58,24 +58,39 @@ class TextScrambler {
 
   getGlobalVariable(name) {
     try {
+      // First check for window (browser)
       if (typeof window !== 'undefined' && window[name]) return window[name];
+      // Then check for globalThis (universal)
       if (typeof globalThis !== 'undefined' && globalThis[name]) return globalThis[name];
+      // Support for Node.js or other environments
+      if (typeof global !== 'undefined' && global[name]) return global[name];
     } catch (e) {
+      console.warn(`Failed to access global variable ${name}:`, e);
       return null;
     }
+    console.warn(`Global variable ${name} not found`);
     return null;
   }
 
   // mapping with case-insensitive support when data-case exists
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
+    
+    // Handle variable references in mappings
     if (mappingString.startsWith('$')) {
       const varName = mappingString.substring(1);
       const varValue = this.getGlobalVariable(varName);
+      
+      // If variable is a string, parse it as mappings
       if (typeof varValue === 'string') return this.parseDirectMappings(varValue);
+      // If variable is already an object, use it directly
       if (typeof varValue === 'object') return varValue;
+      // Fallback to empty mappings if variable not found
+      console.warn(`Mapping variable ${varName} not found or invalid`);
       return {};
     }
+    
+    // Handle direct mapping strings
     return this.parseDirectMappings(mappingString);
   }
 
@@ -83,15 +98,18 @@ class TextScrambler {
     const mappings = {};
     if (!mappingString) return mappings;
     
+    // Process each key:value pair
     mappingString.split(',').forEach(pair => {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
         const charset = this.resolveCharset(set);
+        // Handle case insensitivity if enabled
         if (this.ignoreCase) {
           mappings[char.toLowerCase()] = charset;
           mappings[char.toUpperCase()] = charset;
         }
-        mappings[char] = charset; // Always include exact match
+        // Always include exact match
+        mappings[char] = charset;
       }
     });
     return mappings;
