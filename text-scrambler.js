@@ -8,7 +8,7 @@ class TextScrambler {
     this.originalHTML = el.innerHTML;
     this.frameRequest = null;
     
-    // Configurable
+    // Configurable with case-insensitive attribute support
     this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc');
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
@@ -18,15 +18,15 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
     this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = el.hasAttribute('scramble-case');
+    this.ignoreCase = el.hasAttribute('data-case'); // Global case-insensitivity flag
     this.isScrambling = false;
     
-    // continuous fx
+    // Initialize immediately for continuous effect
     if (this.continuous) {
       this.setText(this.originalText);
     }
     
-    // hover & not continuous
+    // Set up hover effects
     if (!this.continuous && !el.closest('.tab')) {
       el.addEventListener('mouseenter', () => this.triggerScramble());
     }
@@ -66,7 +66,7 @@ class TextScrambler {
     return null;
   }
 
-  // mapping with optional case-insensitivity
+  // mapping with case-insensitive support when data-case exists
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     if (mappingString.startsWith('$')) {
@@ -81,6 +81,8 @@ class TextScrambler {
 
   parseDirectMappings(mappingString) {
     const mappings = {};
+    if (!mappingString) return mappings;
+    
     mappingString.split(',').forEach(pair => {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
@@ -89,7 +91,7 @@ class TextScrambler {
           mappings[char.toLowerCase()] = charset;
           mappings[char.toUpperCase()] = charset;
         }
-        mappings[char] = charset;
+        mappings[char] = charset; // Always include exact match
       }
     });
     return mappings;
@@ -157,16 +159,30 @@ class TextScrambler {
     });
   }
 
-  // character lookup with optional case-insensitivity
+  // Modified to apply case-insensitivity globally
   getCharsForChar(char) {
-    if (this.ignoreCase) {
-      return this.charMappings[char] || 
-             this.charMappings[char.toLowerCase()] || 
-             this.charMappings[char.toUpperCase()] || 
-             this.globalChars || 
-             this.defaultChars;
+    // Get target character based on case sensitivity
+    const targetChar = this.ignoreCase ? char.toLowerCase() : char;
+    
+    // Check the mapping
+    if (this.charMappings[char]) {
+      return this.charMappings[char];
     }
-    return this.charMappings[char] || this.globalChars || this.defaultChars;
+    
+    // case insensitive for mapping
+    if (this.ignoreCase && this.charMappings[targetChar]) {
+      return this.charMappings[targetChar];
+    }
+    
+    const charset = this.globalChars || this.defaultChars;
+    
+    // case insensitive for global variable/ pre set or default
+    if (this.ignoreCase) {
+      return charset;
+    }
+    
+    //case sensitive
+    return charset;
   }
 
   update() {
@@ -206,7 +222,7 @@ class TextScrambler {
   }
 }
 
-// Initialize only elements with data-scramble
+// Initialize
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
     new TextScrambler(el);
