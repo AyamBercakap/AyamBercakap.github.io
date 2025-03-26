@@ -4,9 +4,22 @@
 <script>
   window.myMap = "a:αβγ, b:♠♥♦";
   window.localMap = "e:↑→↓"; // Won't work (use window.)
+   window.gameMappings = "w:↑←→↓, a:🅰🅱🅾";
+  window.colorSymbols = {
+    "r": "🔴🟥",
+    "g": "🟢🟩",
+    "b": "🔵🟦"
 </script>
 <p data-scramble data-scramble-mappings="$localMap" style="color:white;">t&nbsp;&nbsp;e&nbsp;&nbsp;s&nbsp;&nbsp;t</p>
   <p data-scramble data-scramble-mappings="$myMap" style="color:white;">b&nbsp;&nbsp;e&nbsp;&nbsp;a&nbsp;&nbsp;t</p>
+  <p data-scramble data-scramble-mappings="$gameMappings">
+  Game controls
+</p>
+
+<!-- Object variable --> 
+<div data-scramble data-scramble-mappings="$colorSymbols">
+  Color indicators
+</div>
 </button>
 <script src="text-scrambler.js"></script>
   <script src="tabs.js"></script>
