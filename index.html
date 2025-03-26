@@ -1,32 +1,11 @@
 <!DOCTYPE html>
 <html>
-<head>
-<script>
-  // Must use 'var' or attach to window
-  window.gameMappings = "w:↑←→↓, a:🅰🅱🅾";
-  window.colorSymbols = {
-    "r": "🔴🟥",
-    "g": "🟢🟩"
-  };
-</script>
-</head>
 <body style="background-color:black;">
-
-<!-- Variable reference -->
-<p data-scramble data-scramble-mappings="$gameMappings">
-  Game controls
-</p>
-
-<!-- Object variable -->
-<div data-scramble data-scramble-mappings="$colorSymbols">
-  Color indicators
-</div>
-
-<!-- Mixed usage -->
-<button data-scramble 
-        data-scramble-chars="$binary"
-        data-scramble-mappings="x:$emoji">
-  Binary + emoji
+<script>
+  window.myMap = "a:αβγ, b:♠♥♦";
+  const localMap = "e:↑→↓"; // Won't work (use window.)
+</script>
+<p data-scramble-mappings="$myMap">Test</p>
 </button>
 </body>
 </html>
