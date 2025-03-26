@@ -1,37 +1,46 @@
 <!DOCTYPE html>
+ 
 <html>
+ 
 <body style="background-color:black;">
+ 
 <script>
-  window.myMap = "a:αβγ, b:♠♥♦";
-  window.localMap = "e:↑→↓"; // Won't work (use window.)
-   window.gameMappings = "w:↑←→↓, a:🅰🅱🅾";
-  window.colorSymbols = {
-    "r": "🔴🟥",
-    "g": "🟢🟩",
-    "b": "🔵🟦"
+ 
+  window.myMap = "a:🚄🚅🚝, b:🌏🌎🌍🪐🌌";
+  window.localMap = "e:🚗🚓🚕🛺"; // Won't work (use window.)
+ 
 </script>
-<p data-scramble data-scramble-mappings="$localMap" style="color:white;">t&nbsp;&nbsp;e&nbsp;&nbsp;s&nbsp;&nbsp;t</p>
-  <p data-scramble data-scramble-mappings="$myMap" style="color:white;">b&nbsp;&nbsp;e&nbsp;&nbsp;a&nbsp;&nbsp;t</p>
-  <p data-scramble data-scramble-mappings="$gameMappings style="color:white;">
-  Game controls &nbsp;&nbsp;w&nbsp;&nbsp;W&nbsp;&nbsp;a&nbsp;&nbsp;A
-</p>
-
-<!-- Object variable --> 
-<div data-scramble data-scramble-mappings="$colorSymbols" style="color:white;">
-  Color indicators r&nbsp;&nbsp;R&nbsp;&nbsp;g&nbsp;&nbsp;G&nbsp;&nbsp;b&nbsp;&nbsp;B
-</div>
+ 
+<p data-scramble data-scramble-mappings="$localMap" style="color:white;">e&nbsp;&nbsp;E
+ 
+  <p data-scramble data-scramble-mappings="$myMap" style="color:white;">b&nbsp;&nbsp;B&nbsp;&nbsp;a&nbsp;&nbsp;A</p>
+ 
 </button>
+ 
 <script src="text-scrambler.js"></script>
+ 
   <script src="tabs.js"></script>
-  
+ 
+
+ 
   <!-- Initialize tab scramblers -->
+ 
   <script>
+ 
     document.addEventListener('DOMContentLoaded', function() {
+ 
       const activeTab = document.querySelector('.tablinks.active[data-scramble]');
+ 
       if (activeTab && activeTab.scrambler) {
+ 
         activeTab.scrambler.setText(activeTab.scrambler.originalText);
+ 
       }
+ 
     });
+ 
   </script>
+ 
 </body>
+ 
 </html>
