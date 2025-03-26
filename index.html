@@ -1,34 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script>
-    // Define mapping variables
-    const gameMappings = "w:↑←→↓, a:🅰🅱🅾, d:🕹🎮👾";
-    const colorSymbols = {
-      "r": "🔴🟥",
-      "g": "🟢🟩",
-      "b": "🔵🟦"
-    };
-  </script>
+<script>
+  // Must use 'var' or attach to window
+  var gameMappings = "w:↑←→↓, a:🅰🅱🅾";
+  window.colorSymbols = {
+    "r": "🔴🟥",
+    "g": "🟢🟩"
+  };
+</script>
 </head>
 <body style="background-color:black;">
-  <!-- String variable mapping -->
-  <p data-scramble data-scramble-mappings="$gameMappings">
-    WASD controls
-  </p>
 
-  <!-- Object variable mapping -->
-  <div data-scramble data-scramble-mappings="$colorSymbols">
-    RGB colors
-  </div>
+<!-- Variable reference -->
+<p data-scramble data-scramble-mappings="$gameMappings">
+  Game controls
+</p>
 
-  <!-- Mixed usage -->
-  <button data-scramble 
-          data-scramble-chars="★☆✯"
-          data-scramble-mappings="c:$colorSymbols">
-    Click ★☆✯
-  </button>
+<!-- Object variable -->
+<div data-scramble data-scramble-mappings="$colorSymbols">
+  Color indicators
+</div>
 
-  <script src="text-scrambler.js"></script>
+<!-- Mixed usage -->
+<button data-scramble 
+        data-scramble-chars="$binary"
+        data-scramble-mappings="x:$emoji">
+  Binary + emoji
+</button>
 </body>
 </html>
