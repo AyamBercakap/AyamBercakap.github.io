@@ -7,5 +7,17 @@
 </script>
 <p data-scramble-mappings="$myMap" style="color:white;">Test</p>
 </button>
+<script src="text-scrambler.js"></script>
+  <script src="tabs.js"></script>
+  
+  <!-- Initialize tab scramblers -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const activeTab = document.querySelector('.tablinks.active[data-scramble]');
+      if (activeTab && activeTab.scrambler) {
+        activeTab.scrambler.setText(activeTab.scrambler.originalText);
+      }
+    });
+  </script>
 </body>
 </html>
