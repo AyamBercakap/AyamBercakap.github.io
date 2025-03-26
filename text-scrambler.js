@@ -5,11 +5,11 @@ class TextScrambler {
     this.queue = [];
     this.resolve = null;
     this.originalHTML = el.innerHTML;
-    this.originalText = this.extractTextContent(el.innerHTML); // Extract text while converting <br> to \n
+    this.originalText = this.extractTextContent(el.innerHTML);
     this.frameRequest = null;
     
     // Configurable with case-insensitive attribute support
-    this.ignoreSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'false';
+    this.scrambleSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'true'; // Only scramble spaces when true
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
@@ -35,8 +35,8 @@ class TextScrambler {
   // Extract text while converting <br> to \n and &nbsp; to space
   extractTextContent(html) {
     const div = document.createElement('div');
-    div.innerHTML = html.replace(/<br\s*\/?>/gi, '\n'); // Convert <br> to newlines
-    return (div.textContent || div.innerText || '').replace(/\u00A0/g, ' '); // Convert &nbsp; to spaces
+    div.innerHTML = html.replace(/<br\s*\/?>/gi, '\n');
+    return (div.textContent || div.innerText || '').replace(/\u00A0/g, ' ');
   }
 
   // Case-insensitive attribute helpers
@@ -104,10 +104,9 @@ class TextScrambler {
     return mappings;
   }
 
-  //skip space, &nbsp; and newlines when scramble-spc="false" or preserveLineBreaks
+  //skip space and &nbsp; unless scramble-spc="true"
   shouldSkipScramble(char) {
-    return (this.ignoreSpaces && (char === ' ' || char === '\u00A0')) || 
-           char === '\n'; // Always preserve newlines
+    return (char === ' ' || char === '\u00A0') && !this.scrambleSpaces;
   }
 
   triggerScramble() {
@@ -122,7 +121,7 @@ class TextScrambler {
     }
   }
 
-  // scramble handler with automatic line break preservation
+  // scramble handler with automatic HTML preservation
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
@@ -197,7 +196,6 @@ class TextScrambler {
       const { from, to, start, end, chars } = this.queue[i];
       let char = this.queue[i].char;
 
-      // Find next text node position in HTML
       const fromPos = output.indexOf(from, textPos);
       if (fromPos === -1) continue;
 
