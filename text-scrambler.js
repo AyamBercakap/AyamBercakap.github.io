@@ -7,12 +7,12 @@ class TextScrambler {
     this.originalText = el.textContent.trim();
     this.frameRequest = null;
     
-    // Character configuration (also configurable in html)
+    // Character configuration
     this.charMappings = this.parseCharMappings(el.dataset.scrambleMappings);
     this.globalChars = this.resolveCharset(el.dataset.scrambleChars);
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
     
-    // Configurable in html
+    // Animation config
     this.duration = parseInt(el.dataset.scrambleDuration) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
@@ -24,18 +24,19 @@ class TextScrambler {
     el.scrambler = this;
   }
 
-  // Parse character mappings (supports variables and direct mappings)
+  // Parses both direct mappings and variable references
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     
     // Handle variable reference
     if (mappingString.startsWith('$')) {
       const varName = mappingString.substring(1);
-      const varValue = window[varName];
+      const globalScope = typeof window !== 'undefined' ? window : globalThis;
+      const varValue = globalScope[varName];
       
       if (typeof varValue === 'string') {
         return this.parseDirectMappings(varValue);
-      } else if (typeof varValue === 'object') {
+      } else if (typeof varValue === 'object' && varValue !== null) {
         return varValue;
       }
       return {};
@@ -56,16 +57,20 @@ class TextScrambler {
     return mappings;
   }
 
-  // Resolve charset (supports variables, strings, or direct chars)
+  // Resolves both direct charsets and variable references
   resolveCharset(charset) {
     if (!charset) return null;
+    
     if (charset.startsWith('$')) {
-      return window[charset.substring(1)] || charset;
+      const varName = charset.substring(1);
+      const globalScope = typeof window !== 'undefined' ? window : globalThis;
+      return globalScope[varName] || charset;
     }
-    return window[charset] || charset;
+    
+    const globalScope = typeof window !== 'undefined' ? window : globalThis;
+    return globalScope[charset] || charset;
   }
 
-  // Get appropriate charset for a character
   getCharsForChar(char) {
     return this.charMappings[char] || this.globalChars || this.defaultChars;
   }
@@ -148,12 +153,12 @@ class TextScrambler {
   }
 }
 
-// Initialize all scramblers
+// Initialize with proper variable scope handling
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
     const scrambler = new TextScrambler(el);
     
-    // Only add hover effect to non-tab elements
+    // Non-tab hover effects
     if (!el.closest('.tab')) {
       el.addEventListener('mouseenter', () => {
         scrambler.setText(scrambler.originalText);
