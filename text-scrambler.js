@@ -103,6 +103,11 @@ class TextScrambler {
     return mappings;
   }
 
+  // Modified to ignore spaces and &nbsp;
+  shouldSkipScramble(char) {
+    return char === ' ' || char === '\u00A0'; // \u00A0 is &nbsp;
+  }
+
   triggerScramble() {
     if (!this.isScrambling) {
       this.setText(this.originalText).then(() => {
@@ -136,6 +141,19 @@ class TextScrambler {
       for (let i = 0; i < length; i++) {
         const from = oldText[i] || '';
         const to = newText[i] || '';
+        
+        // Skip spaces and &nbsp;
+        if (this.shouldSkipScramble(to)) {
+          this.queue.push({
+            from,
+            to,
+            start: 0,
+            end: 0, // Will immediately show the original character
+            chars: ''
+          });
+          continue;
+        }
+
         const start = Math.floor(Math.random() * this.totalFrames * 0.3);
         const end = start + Math.floor(Math.random() * this.totalFrames * 0.7);
         this.queue.push({ 
@@ -173,7 +191,7 @@ class TextScrambler {
       if (this.frame >= end) {
         complete++;
         output += to;
-      } else if (this.frame >= start) {
+      } else if (this.frame >= start && chars) { // Only scramble if chars exist
         if (!char || Math.random() < 0.28) {
           char = this.randomChar(chars);
           this.queue[i].char = char;
