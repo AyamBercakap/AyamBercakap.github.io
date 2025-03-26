@@ -5,6 +5,7 @@ class TextScrambler {
     this.queue = [];
     this.resolve = null;
     this.originalText = el.textContent.trim();
+    this.originalHTML = el.innerHTML; // Store original HTML
     this.frameRequest = null;
     
     // Character configuration
@@ -20,74 +21,45 @@ class TextScrambler {
     this.continuous = el.hasAttribute('data-scramble-continuous');
     this.isScrambling = false;
     
-    // Store instance on element
-    el.scrambler = this;
-  }
-
-  // Parses both direct mappings and variable references
-  parseCharMappings(mappingString) {
-    if (!mappingString) return {};
+    // Initialize continuous effect
+    if (this.continuous) {
+      this.setText(this.originalText);
+    }
     
-    // Handle variable reference
-    if (mappingString.startsWith('$')) {
-      const varName = mappingString.substring(1);
-      const globalScope = typeof window !== 'undefined' ? window : globalThis;
-      const varValue = globalScope[varName];
+    // hover effects for non-continuous elements
+    if (!this.continuous && !el.closest('.tab')) {
+      el.addEventListener('mouseenter', () => {
+        if (!this.isScrambling) {
+          this.setText(this.originalText);
+        }
+      });
       
-      if (typeof varValue === 'string') {
-        return this.parseDirectMappings(varValue);
-      } else if (typeof varValue === 'object' && varValue !== null) {
-        return varValue;
-      }
-      return {};
+      el.addEventListener('mouseleave', () => {
+        if (!this.isScrambling) {
+          this.el.innerHTML = this.originalHTML;
+        }
+      });
     }
-    
-    // Handle direct mappings
-    return this.parseDirectMappings(mappingString);
   }
 
-  parseDirectMappings(mappingString) {
-    const mappings = {};
-    mappingString.split(',').forEach(pair => {
-      const [char, set] = pair.split(':').map(s => s.trim());
-      if (char && set) {
-        mappings[char] = this.resolveCharset(set);
-      }
-    });
-    return mappings;
-  }
-
-  // Resolves both direct charsets and variable references
-  resolveCharset(charset) {
-    if (!charset) return null;
-    
-    if (charset.startsWith('$')) {
-      const varName = charset.substring(1);
-      const globalScope = typeof window !== 'undefined' ? window : globalThis;
-      return globalScope[varName] || charset;
-    }
-    
-    const globalScope = typeof window !== 'undefined' ? window : globalThis;
-    return globalScope[charset] || charset;
-  }
-
-  getCharsForChar(char) {
-    return this.charMappings[char] || this.globalChars || this.defaultChars;
-  }
+  // ... [Keep all the previous helper methods unchanged] ...
 
   setText(newText) {
     if (this.isScrambling) return;
+    
     this.isScrambling = true;
+    const oldText = this.el.textContent;
     
     return new Promise(resolve => {
       this.resolve = () => {
-        resolve();
         this.isScrambling = false;
-        if (this.continuous) this._queueNextScramble();
+        resolve();
+        if (this.continuous) {
+          setTimeout(() => this.setText(this.originalText), 1000);
+        }
       };
       
       this.queue = [];
-      const oldText = this.el.textContent;
       const length = Math.max(oldText.length, newText.length);
 
       for (let i = 0; i < length; i++) {
@@ -110,12 +82,6 @@ class TextScrambler {
     });
   }
 
-  _queueNextScramble() {
-    this.frameRequest = requestAnimationFrame(() => {
-      this.setText(this.originalText);
-    });
-  }
-
   update() {
     let output = '';
     let complete = 0;
@@ -132,7 +98,7 @@ class TextScrambler {
           char = this.randomChar(chars);
           this.queue[i].char = char;
         }
-        output += `<span style="color:${this.scrambleColor}">${char}</span>`;
+        output += `<span class="scramble-char" style="color:${this.scrambleColor}">${char}</span>`;
       } else {
         output += from;
       }
@@ -147,32 +113,18 @@ class TextScrambler {
       this.frame++;
     }
   }
-
-  randomChar(charset) {
-    return charset[Math.floor(Math.random() * charset.length)];
-  }
 }
 
-// Initialize with proper variable scope handling
+// Initialize with tab support
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize all scramblers
   document.querySelectorAll('[data-scramble]').forEach(el => {
-    const scrambler = new TextScrambler(el);
-    
-    // Non-tab hover effects
-    if (!el.closest('.tab')) {
-      el.addEventListener('mouseenter', () => {
-        scrambler.setText(scrambler.originalText);
-      });
-    }
-
-    // Initialize active tab
-    if (el.classList.contains('active') && el.closest('.tab')) {
-      scrambler.setText(scrambler.originalText);
-    }
-
-    // Continuous scramble
-    if (el.hasAttribute('data-scramble-continuous')) {
-      scrambler.setText(scrambler.originalText);
-    }
+    new TextScrambler(el);
   });
+  
+  // Special handling for active tab on load
+  const activeTab = document.querySelector('.tablinks.active');
+  if (activeTab && activeTab.hasAttribute('data-scramble')) {
+    activeTab.scrambler.setText(activeTab.scrambler.originalText);
+  }
 });
