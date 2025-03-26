@@ -26,9 +26,10 @@
   <!-- Initialize tab scramblers -->
  
   <script>
- 
+    
     document.addEventListener('DOMContentLoaded', function() {
- 
+      document.querySelector('[data-scramble-mappings="$localMap"]').setAttribute('data-scramble-mappings', window.localMap);
+      document.querySelector('[data-scramble-mappings="$myMap"]').setAttribute('data-scramble-mappings', window.myMap);
       const activeTab = document.querySelector('.tablinks.active[data-scramble]');
  
       if (activeTab && activeTab.scrambler) {
