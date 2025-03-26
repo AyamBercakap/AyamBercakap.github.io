@@ -5,7 +5,7 @@ class TextScrambler {
     this.queue = [];
     this.resolve = null;
     this.originalText = el.textContent.trim();
-    this.originalHTML = el.innerHTML; // Store original HTML
+    this.originalHTML = el.innerHTML;
     this.frameRequest = null;
     
     // Character configuration
@@ -21,31 +21,89 @@ class TextScrambler {
     this.continuous = el.hasAttribute('data-scramble-continuous');
     this.isScrambling = false;
     
-    // Initialize continuous effect
+    // Initialize immediately for continuous effect
     if (this.continuous) {
       this.setText(this.originalText);
     }
     
-    // hover effects for non-continuous elements
+    // Set up hover effects
     if (!this.continuous && !el.closest('.tab')) {
-      el.addEventListener('mouseenter', () => {
-        if (!this.isScrambling) {
-          this.setText(this.originalText);
-        }
-      });
+      el.addEventListener('mouseenter', () => this.triggerScramble());
+    }
+  }
+
+  // Fixed variable resolution
+  resolveCharset(charset) {
+    if (!charset) return null;
+    
+    // Handle variable reference
+    if (charset.startsWith('$')) {
+      const varName = charset.substring(1);
+      return this.getGlobalVariable(varName) || charset;
+    }
+    
+    // Handle direct charset or variable name
+    return this.getGlobalVariable(charset) || charset;
+  }
+
+  // Safely get global variables
+  getGlobalVariable(name) {
+    try {
+      // Check window (browser) and globalThis (Node.js)
+      if (typeof window !== 'undefined' && window[name]) return window[name];
+      if (typeof globalThis !== 'undefined' && globalThis[name]) return globalThis[name];
+    } catch (e) {
+      return null;
+    }
+    return null;
+  }
+
+  // Fixed mapping parser
+  parseCharMappings(mappingString) {
+    if (!mappingString) return {};
+    
+    // Handle variable reference
+    if (mappingString.startsWith('$')) {
+      const varName = mappingString.substring(1);
+      const varValue = this.getGlobalVariable(varName);
       
-      el.addEventListener('mouseleave', () => {
-        if (!this.isScrambling) {
-          this.el.innerHTML = this.originalHTML;
+      if (typeof varValue === 'string') {
+        return this.parseDirectMappings(varValue);
+      } else if (typeof varValue === 'object' && varValue !== null) {
+        return varValue;
+      }
+      return {};
+    }
+    
+    // Handle direct mappings
+    return this.parseDirectMappings(mappingString);
+  }
+
+  parseDirectMappings(mappingString) {
+    const mappings = {};
+    mappingString.split(',').forEach(pair => {
+      const [char, set] = pair.split(':').map(s => s.trim());
+      if (char && set) {
+        mappings[char] = this.resolveCharset(set);
+      }
+    });
+    return mappings;
+  }
+
+  triggerScramble() {
+    if (!this.isScrambling) {
+      this.setText(this.originalText).then(() => {
+        if (!this.continuous) {
+          setTimeout(() => {
+            this.el.innerHTML = this.originalHTML;
+          }, this.duration);
         }
       });
     }
   }
 
-  // ... [Keep all the previous helper methods unchanged] ...
-
   setText(newText) {
-    if (this.isScrambling) return;
+    if (this.isScrambling) return Promise.resolve();
     
     this.isScrambling = true;
     const oldText = this.el.textContent;
@@ -82,6 +140,10 @@ class TextScrambler {
     });
   }
 
+  getCharsForChar(char) {
+    return this.charMappings[char] || this.globalChars || this.defaultChars;
+  }
+
   update() {
     let output = '';
     let complete = 0;
@@ -113,18 +175,25 @@ class TextScrambler {
       this.frame++;
     }
   }
+
+  randomChar(charset) {
+    return charset[Math.floor(Math.random() * charset.length)];
+  }
 }
 
-// Initialize with tab support
+// Initialize with proper variable support
 document.addEventListener('DOMContentLoaded', () => {
   // Initialize all scramblers
   document.querySelectorAll('[data-scramble]').forEach(el => {
-    new TextScrambler(el);
+    const scrambler = new TextScrambler(el);
+    
+    // Store instance on element for tab access
+    el.scrambler = scrambler;
   });
   
-  // Special handling for active tab on load
-  const activeTab = document.querySelector('.tablinks.active');
-  if (activeTab && activeTab.hasAttribute('data-scramble')) {
+  // Initialize active tab
+  const activeTab = document.querySelector('.tablinks.active[data-scramble]');
+  if (activeTab && activeTab.scrambler) {
     activeTab.scrambler.setText(activeTab.scrambler.originalText);
   }
 });
