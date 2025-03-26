@@ -4,21 +4,21 @@ class TextScrambler {
     this.frame = 0;
     this.queue = [];
     this.resolve = null;
+    this.originalText = el.textContent;
     this.originalHTML = el.innerHTML;
-    this.originalText = this.getTextContent(el.innerHTML);
     this.frameRequest = null;
     
     // Configurable with case-insensitive attribute support
-    this.scrambleSpaces = this.getCaseInsensitiveAttr('scramble-spc') === 'true'; // Scramble spaces when true
+    this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc'); // Skip spaces when true
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
-    this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
-    this.duration = parseInt(this.getCaseInsensitiveAttr('scramble-duration')) || 600;
-    this.frameRate = 16.67;
+    this.defaultChars = '!<>-_\\/[]{}—=+*^?#________'; // Fallback charset
+    this.duration = parseInt(this.getCaseInsensitiveAttr('scramble-duration')) || 600; // Animation duration in ms
+    this.frameRate = 16.67; // Roughly 60fps
     this.totalFrames = Math.round(this.duration / this.frameRate);
-    this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
-    this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = this.getCaseInsensitiveAttr('scramble-case') === 'true';
+    this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF'; // Scramble character color
+    this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous'); // Continuous animation flag
+    this.ignoreCase = el.hasAttribute('data-case'); // Global case-insensitivity toggle
     this.isScrambling = false;
     
     // Initialize immediately for continuous effect
@@ -26,26 +26,20 @@ class TextScrambler {
       this.setText(this.originalText);
     }
     
-    // Set up hover effects
+    // Set up hover effects (disabled for tab elements)
     if (!this.continuous && !el.closest('.tab')) {
       el.addEventListener('mouseenter', () => this.triggerScramble());
     }
   }
 
-  // Extract text content while preserving HTML structure
-  getTextContent(html) {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return (div.textContent || div.innerText || '').replace(/\u00A0/g, ' ');
-  }
-
-  // Case-insensitive attribute helpers
+  // Case-insensitive attribute check
   hasCaseInsensitiveAttr(attrName) {
     return this.el.getAttributeNames().some(attr => 
       attr.toLowerCase() === attrName.toLowerCase()
     );
   }
 
+  // Gets attribute value case-insensitively
   getCaseInsensitiveAttr(attrName) {
     const foundAttr = this.el.getAttributeNames().find(attr => 
       attr.toLowerCase() === attrName.toLowerCase()
@@ -53,7 +47,7 @@ class TextScrambler {
     return foundAttr ? this.el.getAttribute(foundAttr) : null;
   }
 
-  // charset & charset variables
+  // Resolves charset references (including global variables)
   resolveCharset(charset) {
     if (!charset) return null;
     if (charset.startsWith('$')) {
@@ -63,6 +57,7 @@ class TextScrambler {
     return this.getGlobalVariable(charset) || charset;
   }
 
+  // Safe global variable access (window/globalThis)
   getGlobalVariable(name) {
     try {
       if (typeof window !== 'undefined' && window[name]) return window[name];
@@ -73,7 +68,7 @@ class TextScrambler {
     return null;
   }
 
-  // mapping with case-insensitive support when scramble-case="true"
+  // Parses character mappings with case-insensitive support
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     if (mappingString.startsWith('$')) {
@@ -86,6 +81,7 @@ class TextScrambler {
     return this.parseDirectMappings(mappingString);
   }
 
+  // Processes raw mapping strings (format: "key:value, key2:value2")
   parseDirectMappings(mappingString) {
     const mappings = {};
     if (!mappingString) return mappings;
@@ -98,17 +94,19 @@ class TextScrambler {
           mappings[char.toLowerCase()] = charset;
           mappings[char.toUpperCase()] = charset;
         }
-        mappings[char] = charset;
+        mappings[char] = charset; // Always include exact match
       }
     });
     return mappings;
   }
 
-  //skip space and &nbsp; unless scramble-spc="true"
+  // Determines if character should be skipped during scrambling
+  // Handles spaces, non-breaking spaces, and newlines when ignoreSpaces is true
   shouldSkipScramble(char) {
-    return (char === ' ' || char === '\u00A0') && !this.scrambleSpaces;
+    return this.ignoreSpaces && (char === ' ' || char === '\u00A0' || char === '\n');
   }
 
+  // Manual scramble trigger (primarily for hover effects)
   triggerScramble() {
     if (!this.isScrambling) {
       this.setText(this.originalText).then(() => {
@@ -121,12 +119,12 @@ class TextScrambler {
     }
   }
 
-  // scramble handler
+  // Main text scrambling handler
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
     this.isScrambling = true;
-    const oldText = this.getTextContent(this.el.innerHTML);
+    const oldText = this.el.textContent;
     
     return new Promise(resolve => {
       this.resolve = () => {
@@ -166,7 +164,8 @@ class TextScrambler {
     });
   }
 
-  // Modified to apply case-insensitivity when scramble-case="true"
+  // Returns appropriate charset for target character
+  // Respects case sensitivity and custom mappings
   getCharsForChar(char) {
     const targetChar = this.ignoreCase ? char.toLowerCase() : char;
     
@@ -187,55 +186,30 @@ class TextScrambler {
     return charset;
   }
 
-  // Update text while preserving HTML structure
+  // DOM update handler - rebuilds output with scrambling characters
   update() {
-    const temp = document.createElement('div');
-    temp.innerHTML = this.originalHTML;
-    const textNodes = [];
-    const walker = document.createTreeWalker(temp, NodeFilter.SHOW_TEXT, null, false);
-    let node;
-    
-    while (node = walker.nextNode()) {
-      if (node.nodeValue.trim().length > 0) {
-        textNodes.push(node);
+    let output = '';
+    let complete = 0;
+
+    for (let i = 0; i < this.queue.length; i++) {
+      const { from, to, start, end, chars } = this.queue[i];
+      let char = this.queue[i].char;
+
+      if (this.frame >= end) {
+        complete++;
+        output += to;
+      } else if (this.frame >= start && chars) {
+        if (!char || Math.random() < 0.28) {
+          char = this.randomChar(chars);
+          this.queue[i].char = char;
+        }
+        output += `<span class="scramble-char" style="color:${this.scrambleColor}">${char}</span>`;
+      } else {
+        output += from;
       }
     }
 
-    let textOffset = 0;
-    let complete = 0;
-
-    textNodes.forEach(textNode => {
-      let newContent = '';
-      const length = textNode.nodeValue.length;
-      
-      for (let i = 0; i < length; i++) {
-        const qIndex = textOffset + i;
-        if (qIndex >= this.queue.length) continue;
-        
-        const { from, to, start, end, chars } = this.queue[qIndex];
-        let char = this.queue[qIndex].char;
-
-        if (this.frame >= end) {
-          complete++;
-          newContent += to;
-        } else if (this.frame >= start && chars) {
-          if (!char || Math.random() < 0.28) {
-            char = this.randomChar(chars);
-            this.queue[qIndex].char = char;
-          }
-          newContent += `<span class="scramble-char" style="color:${this.scrambleColor}">${char}</span>`;
-        } else {
-          newContent += from;
-        }
-      }
-      
-      textOffset += length;
-      const wrapper = document.createElement('span');
-      wrapper.innerHTML = newContent;
-      textNode.parentNode.replaceChild(wrapper, textNode);
-    });
-
-    this.el.innerHTML = temp.innerHTML;
+    this.el.innerHTML = output;
 
     if (complete === this.queue.length) {
       this.resolve();
@@ -245,12 +219,13 @@ class TextScrambler {
     }
   }
 
+  // Helper: selects random character from charset
   randomChar(charset) {
     return charset[Math.floor(Math.random() * charset.length)];
   }
 }
 
-// Initialize
+// Auto-initialize all [data-scramble] elements on load
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
     new TextScrambler(el);
