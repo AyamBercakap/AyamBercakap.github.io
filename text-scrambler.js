@@ -58,7 +58,7 @@ class TextScrambler {
     return null;
   }
 
-  // Fixed mapping parser
+  // Fixed mapping parser with case-insensitive support
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     
@@ -70,12 +70,18 @@ class TextScrambler {
       if (typeof varValue === 'string') {
         return this.parseDirectMappings(varValue);
       } else if (typeof varValue === 'object' && varValue !== null) {
-        return varValue;
+        // Convert object keys to support case-insensitive matching
+        const caseInsensitiveMappings = {};
+        for (const key in varValue) {
+          caseInsensitiveMappings[key.toLowerCase()] = varValue[key];
+          caseInsensitiveMappings[key.toUpperCase()] = varValue[key];
+        }
+        return caseInsensitiveMappings;
       }
       return {};
     }
     
-    // Handle direct mappings
+    // Handle direct mappings with case-insensitive support
     return this.parseDirectMappings(mappingString);
   }
 
@@ -84,7 +90,14 @@ class TextScrambler {
     mappingString.split(',').forEach(pair => {
       const [char, set] = pair.split(':').map(s => s.trim());
       if (char && set) {
-        mappings[char] = this.resolveCharset(set);
+        const charset = this.resolveCharset(set);
+        // Map both lowercase and uppercase versions
+        mappings[char.toLowerCase()] = charset;
+        mappings[char.toUpperCase()] = charset;
+        // Preserve original case if mixed (e.g., 'Ä')
+        if (char !== char.toLowerCase() && char !== char.toUpperCase()) {
+          mappings[char] = charset;
+        }
       }
     });
     return mappings;
@@ -141,7 +154,12 @@ class TextScrambler {
   }
 
   getCharsForChar(char) {
-    return this.charMappings[char] || this.globalChars || this.defaultChars;
+    // Check in order: exact match -> lowercase -> uppercase -> global -> default
+    return this.charMappings[char] || 
+           this.charMappings[char.toLowerCase()] || 
+           this.charMappings[char.toUpperCase()] || 
+           this.globalChars || 
+           this.defaultChars;
   }
 
   update() {
