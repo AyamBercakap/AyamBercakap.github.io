@@ -4,102 +4,62 @@ class TextScrambler {
     this.frame = 0;
     this.queue = [];
     this.resolve = null;
-    this.originalText = this.prepareText(el.textContent);
+    this.originalText = el.textContent;
     this.originalHTML = el.innerHTML;
     this.frameRequest = null;
     
-    // Character configuration
-    this.charMappings = this.parseCharMappings(el.dataset.scrambleMappings);
-    this.globalChars = this.resolveCharset(el.dataset.scrambleChars);
+    // Configurable
+    this.ignoreSpaces = el.hasAttribute('scramble-spc');
+    this.charMappings = this.parseCharMappings(el.getAttribute('scramble-mappings'));
+    this.globalChars = this.resolveCharset(el.getAttribute('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
-    
-    // Animation config
-    this.duration = parseInt(el.dataset.scrambleDuration) || 600;
+    this.duration = parseInt(el.getAttribute('scramble-duration')) || 600;
     this.frameRate = 16.67;
     this.totalFrames = Math.round(this.duration / this.frameRate);
-    this.scrambleColor = el.dataset.scrambleColor || '#FFFFFF';
-    this.continuous = el.hasAttribute('data-scramble-continuous');
+    this.scrambleColor = el.getAttribute('scramble-color') || '#FFFFFF';
+    this.continuous = el.hasAttribute('scramble-continuous');
     this.isScrambling = false;
     
-    // Initialize immediately for continuous effect
+    // continuous fx
     if (this.continuous) {
       this.setText(this.originalText);
     }
     
-    // Set up hover effects
+    // hover & not continuous
     if (!this.continuous && !el.closest('.tab')) {
       el.addEventListener('mouseenter', () => this.triggerScramble());
     }
   }
 
-  // Normalize spaces and convert HTML entities
-  prepareText(text) {
-    const temp = document.createElement('div');
-    temp.innerHTML = text;
-    return temp.textContent
-      .replace(/\u00A0/g, ' ') // Convert &nbsp; to space
-      .replace(/\s+/g, ' ')    // Collapse multiple spaces
-      .trim();
-  }
-
-  // Skip scrambling for spaces and &nbsp;
-  shouldSkipScramble(char) {
-    return char === ' ' || char === '\u00A0';
-  }
-
-  // Case-insensitive variable resolution
+  // charset & charset variables
   resolveCharset(charset) {
     if (!charset) return null;
-    
     if (charset.startsWith('$')) {
-      const varName = charset.substring(1).toLowerCase();
+      const varName = charset.substring(1);
       return this.getGlobalVariable(varName) || charset;
     }
-    
-    return this.getGlobalVariable(charset.toLowerCase()) || charset;
+    return this.getGlobalVariable(charset) || charset;
   }
 
-  // Case-insensitive global variable access
   getGlobalVariable(name) {
     try {
-      const lowerName = name.toLowerCase();
-      if (typeof window !== 'undefined') {
-        for (const key in window) {
-          if (key.toLowerCase() === lowerName) return window[key];
-        }
-      }
-      if (typeof globalThis !== 'undefined') {
-        for (const key in globalThis) {
-          if (key.toLowerCase() === lowerName) return globalThis[key];
-        }
-      }
+      if (typeof window !== 'undefined' && window[name]) return window[name];
+      if (typeof globalThis !== 'undefined' && globalThis[name]) return globalThis[name];
     } catch (e) {
       return null;
     }
     return null;
   }
-
-  // Case-insensitive mapping parser
+  // mapping aka specific characters scramble to another specific characters (can be set manually or as a variable)
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
-    
     if (mappingString.startsWith('$')) {
-      const varName = mappingString.substring(1).toLowerCase();
+      const varName = mappingString.substring(1);
       const varValue = this.getGlobalVariable(varName);
-      
-      if (typeof varValue === 'string') {
-        return this.parseDirectMappings(varValue);
-      } else if (typeof varValue === 'object' && varValue !== null) {
-        const lowerCaseMappings = {};
-        for (const key in varValue) {
-          lowerCaseMappings[key.toLowerCase()] = varValue[key];
-          lowerCaseMappings[key.toUpperCase()] = varValue[key];
-        }
-        return lowerCaseMappings;
-      }
+      if (typeof varValue === 'string') return this.parseDirectMappings(varValue);
+      if (typeof varValue === 'object') return varValue;
       return {};
     }
-    
     return this.parseDirectMappings(mappingString);
   }
 
@@ -118,6 +78,10 @@ class TextScrambler {
     });
     return mappings;
   }
+//skip space and &nbsp
+  shouldSkipScramble(char) {
+    return this.ignoreSpaces && (char === ' ' || char === '\u00A0');
+  }
 
   triggerScramble() {
     if (!this.isScrambling) {
@@ -130,13 +94,12 @@ class TextScrambler {
       });
     }
   }
-
+// scramble handler
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
     this.isScrambling = true;
-    const preparedText = this.prepareText(newText);
-    const oldText = this.prepareText(this.el.textContent);
+    const oldText = this.el.textContent;
     
     return new Promise(resolve => {
       this.resolve = () => {
@@ -148,20 +111,14 @@ class TextScrambler {
       };
       
       this.queue = [];
-      const length = Math.max(oldText.length, preparedText.length);
+      const length = Math.max(oldText.length, newText.length);
 
       for (let i = 0; i < length; i++) {
         const from = oldText[i] || '';
-        const to = preparedText[i] || '';
+        const to = newText[i] || '';
         
         if (this.shouldSkipScramble(to)) {
-          this.queue.push({
-            from,
-            to,
-            start: 0,
-            end: 0,
-            chars: ''
-          });
+          this.queue.push({ from, to, start: 0, end: 0, chars: '' });
           continue;
         }
 
@@ -181,7 +138,7 @@ class TextScrambler {
       this.update();
     });
   }
-
+//ignore case
   getCharsForChar(char) {
     return this.charMappings[char] || 
            this.charMappings[char.toLowerCase()] || 
@@ -227,15 +184,9 @@ class TextScrambler {
   }
 }
 
-// Initialize
+// Initialize only elements with data-scramble
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
-    const scrambler = new TextScrambler(el);
-    el.scrambler = scrambler;
+    new TextScrambler(el);
   });
-  
-  const activeTab = document.querySelector('.tablinks.active[data-scramble]');
-  if (activeTab && activeTab.scrambler) {
-    activeTab.scrambler.setText(activeTab.scrambler.originalText);
-  }
 });
