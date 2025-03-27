@@ -18,7 +18,7 @@ class TextScrambler {
     this.totalFrames = Math.round(this.duration / this.frameRate);
     this.scrambleColor = this.getCaseInsensitiveAttr('scramble-color') || '#FFFFFF';
     this.continuous = this.hasCaseInsensitiveAttr('scramble-continuous');
-    this.ignoreCase = el.hasAttribute('data-case');
+    this.ignoreCase = el.hasAttribute('scramble-case');
     this.isScrambling = false;
     
     // Initialize immediately for continuous effect
