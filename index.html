@@ -89,6 +89,13 @@
     window.galactic = galactic;
     window.binary = binary;
     window.emoji = emoji;
+        
+    document.addEventListener('DOMContentLoaded', () => {
+    const scrambleElements = document.querySelectorAll('[data-scramble]');
+    scrambleElements.forEach((element) => {
+        new TextScrambler(element);
+    });
+});
     </script>
 
     <script src="tabs.js"></script>
