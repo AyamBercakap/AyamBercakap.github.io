@@ -128,9 +128,34 @@ hr{
 }
 
 .tab button.active .scramble-char {
-  animation: 
-    scramble-pulse 0.8s infinite alternate,
-    scramble-drift 1.5s infinite alternate;
+    animation: 
+        scramble-pulse 0.8s infinite alternate,
+        scramble-drift 1.5s infinite alternate;
+}
+
+/* Continuous scramble animation */
+.tab button.active[scramble-continuous] .scramble-char {
+    animation: 
+        scramble-pulse 0.8s infinite alternate,
+        scramble-drift 1.5s infinite alternate,
+        scramble-continuous 2s infinite linear;
+}
+
+/*additional testing*/
+@keyframes scramble-pulse {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
+@keyframes scramble-drift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(2px); }
+}
+
+@keyframes scramble-continuous {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+    100% { transform: translateY(0); }
 }
 .container {
   font-family: "Roboto Mono", monospace;
