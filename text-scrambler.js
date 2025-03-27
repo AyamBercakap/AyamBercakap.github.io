@@ -81,6 +81,13 @@ class TextScrambler {
     return this.parseDirectMappings(mappingString);
   }
 
+  // Checks if mapping is valid or not
+  if (Object.keys(this.charMappings).length === 0 && 
+        !this.globalChars && 
+        !this.hasCaseInsensitiveAttr('scramble-chars')) {
+      console.log('Skipping scramble - no mappings/chars defined for:', el.textContent.trim());
+      this.skipScramble = true;
+    }
   // Processes raw mapping strings (format: "key:value, key2:value2")
   parseDirectMappings(mappingString) {
     const mappings = {};
