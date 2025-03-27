@@ -133,6 +133,12 @@ hr{
         scramble-drift 1.5s infinite alternate;
 }
 
+.tab button:not(.active)[data-scramble] .scramble-char {
+    animation: none !important;
+    opacity: 1;
+    transform: none;
+}
+
 /* Continuous scramble animation */
 .tab button.active[scramble-continuous] .scramble-char {
     animation: 
