@@ -128,6 +128,10 @@ class TextScrambler {
 
   // Main text scrambling handler
   setText(newText) {
+    if (this.skipScramble) {
+      this.el.innerHTML = this.originalHTML;
+      return Promise.resolve();
+    }
     if (this.isScrambling) return Promise.resolve();
     
     this.isScrambling = true;
