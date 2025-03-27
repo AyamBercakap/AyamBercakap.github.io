@@ -134,11 +134,12 @@ hr{
 }
 
 .tab button:not(.active)[data-scramble] .scramble-char {
-    animation: none !important;
-    opacity: 1;
-    transform: none;
+    display: none !important;
 }
 
+.tab button:not(.active)[data-scramble] {
+    animation: none !important;
+}
 /* Continuous scramble animation */
 .tab button.active[scramble-continuous] .scramble-char {
     animation: 
