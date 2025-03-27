@@ -9,7 +9,7 @@ class TextScrambler {
     this.frameRequest = null;
     
     // Configurable with case-insensitive attribute support
-    this.ignoreSpaces = this.hasCaseInsensitiveAttr('scramble-spc');
+    this.preserveSpaces = !this.hasCaseInsensitiveAttr('scramble-spc'); // Spaces preserved by default
     this.charMappings = this.parseCharMappings(this.getCaseInsensitiveAttr('scramble-mappings'));
     this.globalChars = this.resolveCharset(this.getCaseInsensitiveAttr('scramble-chars'));
     this.defaultChars = '!<>-_\\/[]{}—=+*^?#________';
@@ -32,13 +32,14 @@ class TextScrambler {
     }
   }
 
-  // Case-insensitive attribute helpers
+  // Case-insensitive attribute check
   hasCaseInsensitiveAttr(attrName) {
     return this.el.getAttributeNames().some(attr => 
       attr.toLowerCase() === attrName.toLowerCase()
     );
   }
 
+  // Gets attribute value case-insensitively
   getCaseInsensitiveAttr(attrName) {
     const foundAttr = this.el.getAttributeNames().find(attr => 
       attr.toLowerCase() === attrName.toLowerCase()
@@ -46,7 +47,7 @@ class TextScrambler {
     return foundAttr ? this.el.getAttribute(foundAttr) : null;
   }
 
-  // charset & charset variables
+  // Resolves charset references (including global variables)
   resolveCharset(charset) {
     if (!charset) return null;
     if (charset.startsWith('$')) {
@@ -56,6 +57,7 @@ class TextScrambler {
     return this.getGlobalVariable(charset) || charset;
   }
 
+  // Safe global variable access (window/globalThis)
   getGlobalVariable(name) {
     try {
       if (typeof window !== 'undefined' && window[name]) return window[name];
@@ -66,7 +68,7 @@ class TextScrambler {
     return null;
   }
 
-  // mapping with case-insensitive support when data-case exists
+  // Parses character mappings with case-insensitive support
   parseCharMappings(mappingString) {
     if (!mappingString) return {};
     if (mappingString.startsWith('$')) {
@@ -79,6 +81,7 @@ class TextScrambler {
     return this.parseDirectMappings(mappingString);
   }
 
+  // Processes raw mapping strings (format: "key:value, key2:value2")
   parseDirectMappings(mappingString) {
     const mappings = {};
     if (!mappingString) return mappings;
@@ -97,11 +100,13 @@ class TextScrambler {
     return mappings;
   }
 
-  //skip space, &nbsp and newlines when ignoreSpaces is true
+  // Determines if whitespace should be preserved
+  // Returns true for spaces/newlines when preserveSpaces is true
   shouldSkipScramble(char) {
-    return this.ignoreSpaces && (char === ' ' || char === '\u00A0' || char === '\n');
+    return this.preserveSpaces && (char === ' ' || char === '\u00A0' || char === '\n');
   }
 
+  // Manual scramble trigger (primarily for hover effects)
   triggerScramble() {
     if (!this.isScrambling) {
       this.setText(this.originalText).then(() => {
@@ -114,7 +119,7 @@ class TextScrambler {
     }
   }
 
-  // scramble handler
+  // Main text scrambling handler
   setText(newText) {
     if (this.isScrambling) return Promise.resolve();
     
@@ -159,7 +164,8 @@ class TextScrambler {
     });
   }
 
-  // Modified to apply case-insensitivity globally
+  // Returns appropriate charset for target character
+  // Respects case sensitivity and custom mappings
   getCharsForChar(char) {
     const targetChar = this.ignoreCase ? char.toLowerCase() : char;
     
@@ -180,6 +186,7 @@ class TextScrambler {
     return charset;
   }
 
+  // DOM update handler - rebuilds output with scrambling characters
   update() {
     let output = '';
     let complete = 0;
@@ -212,12 +219,13 @@ class TextScrambler {
     }
   }
 
+  // Helper: selects random character from charset
   randomChar(charset) {
     return charset[Math.floor(Math.random() * charset.length)];
   }
 }
 
-// Initialize
+// Auto-initialize all [data-scramble] elements on load
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('[data-scramble]').forEach(el => {
     new TextScrambler(el);
