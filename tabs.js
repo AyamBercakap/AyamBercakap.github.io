@@ -1,44 +1,33 @@
-// Tab system controller with active-only scrambling
+// Tab system controller with scramble awareness
 function openTab(evt, tabName) {
-    // Hide all tab content
-    const tabcontent = document.querySelectorAll(".tabcontent");
-    tabcontent.forEach(content => content.style.display = "none");
+  const tabcontent = document.querySelectorAll(".tabcontent");
+  const tablinks = document.querySelectorAll(".tablinks");
 
-    // Deactivate all tabs and STOP their scramblers
-    const tablinks = document.querySelectorAll(".tablinks");
-    tablinks.forEach(tab => {
-        tab.classList.remove("active");
-        if (tab.scrambler) {
-            // Reset to original text and stop animations
-            tab.scrambler.continuous = false;
-            tab.scrambler.el.innerHTML = tab.scrambler.originalHTML;
-        }
-    });
-
-    // Activate clicked tab
-    const activeTab = evt.currentTarget;
-    activeTab.classList.add("active");
-    document.getElementById(tabName).style.display = "block";
-
-    // Initialize/restart scrambler ONLY for active tab
-    if (activeTab.hasAttribute('data-scramble')) {
-        if (!activeTab.scrambler) {
-            activeTab.scrambler = new TextScrambler(activeTab);
-        }
-        activeTab.scrambler.setText(activeTab.scrambler.originalText);
-        
-        // Restore continuous scramble if specified
-        if (activeTab.hasAttribute('scramble-continuous')) {
-            activeTab.scrambler.continuous = true;
-        }
+  // Deactivate all tabs
+  tablinks.forEach(tab => {
+    tab.classList.remove("active");
+    if (tab.scrambler) {
+      tab.scrambler.continuous = false;
+      tab.scrambler.el.innerHTML = tab.scrambler.originalHTML;
     }
+  });
+
+  // Activate clicked tab if scrambler enabled
+  const activeTab = evt.currentTarget;
+  activeTab.classList.add("active");
+  document.getElementById(tabName).style.display = "block";
+
+  if (activeTab.scrambler && !activeTab.scrambler.skipScramble) {
+    activeTab.scrambler.setText(activeTab.scrambler.originalText);
+  }
 }
 
-// Initialize only default active tab
+// Initialize only non-skipped tabs
 document.addEventListener('DOMContentLoaded', () => {
-    const defaultTab = document.querySelector('.tablinks.active[data-scramble]');
-    if (defaultTab) {
-        defaultTab.scrambler = new TextScrambler(defaultTab);
-        defaultTab.scrambler.setText(defaultTab.scrambler.originalText);
+  document.querySelectorAll('.tablinks[data-scramble]').forEach(tab => {
+    tab.scrambler = new TextScrambler(tab);
+    if (tab.classList.contains('active') && !tab.scrambler.skipScramble) {
+      tab.scrambler.setText(tab.scrambler.originalText);
     }
+  });
 });
