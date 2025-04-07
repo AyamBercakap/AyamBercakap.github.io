@@ -1,4 +1,15 @@
 /* Base scramble styles */
+@font-face {
+  font-family: 'Galactic';
+  src: url('https://files.catbox.moe/d1g4gp.ttf') format('truetype');
+  font-display: swap;
+}
+@font-face{
+  font-family: 'Roboto Mono';
+  src: url('https://files.catbox.moe/fb64yh.ttf') format('truetype');
+  font-display: swap;
+}
+
 [data-scramble] {
   display: inline-block;
 }
@@ -6,7 +17,10 @@
 .scramble-char {
   display: inline-block;
   min-width: 8px;
-  transition: transform 0.1s ease;;
+  transition: transform 0.1s ease;
+  display: inline-block; /* Better for headers with large fonts */
+  min-width: 0.5em; /* Prevents layout shift during scramble */
+}
 }
 
 /* Hover effects */
@@ -58,7 +72,7 @@ a:hover {
   color: yellow;
  
 }
-       
+      
 hr{
   height: 1px;
   background-color: none;
@@ -68,43 +82,47 @@ hr{
 
 /*Tab Styles*/
 .tab {
-  background-color: #FFB6C1;
+  background-color: none ;
   display: flex;
   width: 100%;
-  min-width: fit-content; /* Prevent shrinking smaller than tabs */
-  overflow: hidden; /* Clean up edges */
+  min-width: fit-content;
+  overflow: hidden;
   border-radius: 5px 5px 0px 0px;
-  border-bottom: none;
-  border-bottom-style: none;
-  border: 1px solid #ccc;
   margin-bottom: 0;
+  align-items: flex-end; /* Align tabs to the bottom */
 }
 
 .tab button {
-  background-color: inherit;
+  background-color: #FFB6C1;
   border: none;
   outline: none;
   cursor: pointer;
   padding: 14px 16px;
-  transition: 0.3s;
+  transition: all 0.3s ease; /* Changed to 'all' to animate height */
   font-size: 17px;
   font-family: "Roboto Condensed", serif;
   color: #434343;
   flex: 1 1 0;
   text-align: center;
   position: relative;
-  flex:1; /* Equal width distribution */
-  min-width: 0; /* Allow text truncation */
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
-}
-.tab button:hover {
-  background-color: #e096a2;
+  height: 48px; /* Default height */
 }
 
-.tab button.active {
-  background-color: #c2848e;
+/* Adjust hover effect to work with height */
+.tab button:hover {
+  background-color: #E096A2;
 }
+.tab button.active {
+  background-color: #D17B95;
+  color: white !important;
+  height: 60px; /* Taller height for active tab */
+  padding-top: 20px; /* Adjust padding to maintain text position */
+  border-radius: 5px 5px 0px 0px;
+}
+
 
 .tabcontent {
   box-sizing: border-box;
@@ -146,6 +164,18 @@ hr{
         scramble-pulse 0.8s infinite alternate,
         scramble-drift 1.5s infinite alternate,
         scramble-continuous 2s infinite linear;
+}
+/*focus styles (when navigation button is pressed)*/
+.tab button:focus {
+  outline: 2px solid #6488EA;
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Ensure active tab stays visually distinct when focused */
+.tab button.active:focus {
+  outline-color: #819EEE;
 }
 
 /*additional testing*/
@@ -190,9 +220,17 @@ hr{
 /* Mobile Device Support */
 @media (max-width: 600px) {
   .tab button {
+    height: 40px; /* Smaller default height for mobile */
     padding: 10px 8px;
     font-size: 14px;
   }
+  
+  .tab button.active {
+    height: 50px; /* Smaller active height for mobile */
+    padding-top: 15px;
+    border-radius: 5px 5px 0px 0px;
+  }
+}
   .tabcontent {
     padding: 8px;
   }
@@ -201,4 +239,3 @@ hr{
 #WP.tabcontent {
   display: block;
 }
-

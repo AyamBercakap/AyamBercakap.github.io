@@ -2,13 +2,16 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preload" href=https://files.catbox.moe/fb64yh.ttf as="font" type="font/otf" crossorigin>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:wght@700&family=Roboto+Mono:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="index.css">
+    
     <title>Dani's Website</title>
 </head>
 <body>
+    <p font-scramble scramble-fonts="Galactic"scramble-duration="1000">Hover to Scramble!</p>
     <p data-scramble>Hover over me</p>
     <p data-scramble scramble-chars="galactic">
         Galactic Scramble
@@ -32,7 +35,7 @@
 
     <!-- Custom color -->
     <div data-scramble scramble-color="#00ff00">Green scramble</div>
-    <div data-scramble scramble-chars="galactic">different charset</div>
+    <div data-scramble scramble-case="true" scramble-fonts="'Roboto Mono'">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z</div>
     
     <!-- Custom duration -->
     <a href="#" data-scramble scramble-duration="200">Fast link</a>
@@ -45,26 +48,23 @@
         Red slow scramble
     </span>
     <div data-scramble scramble-color="#00ff00">Green scramble</div>
-    
-    <h1>My Projects</h1>
+    <div>
+    <h1 data-scramble scramble-fonts="Galactic"><br>a b c d e f g h i j k l m n o p q r s t u v w x y z</h1></div>
     <p data-scramble scramble-duration="400">Click on the buttons inside the tabbed menu:</p>
     <p data-scramble scramble-color="#FF0000">Red scramble</p>
 
     <div class="tab">
-        <button class="tablinks active" 
-                data-scramble 
-                scramble-color="white"
-                onclick="openTab(event, 'WP')">
-            Web Programming
-        </button>
-        <button data-scramble scramble-chars="▁▂▃▄▅▆▇█" class="tablinks" onclick="openTab(event, 'OODI')">OODI</button>
-        <button data-scramble class="tablinks" onclick="openTab(event, 'DCN')">DataCom</button>
-        <button data-scramble class="tablinks" onclick="openTab(event, 'GUI')">GUI</button>
+        <button class="tablinks active" data-scramble scramble-mapping="$AlphGalactic" onclick="openTab(event, 'WP')">WebProg</button>
+        <button class="tablinks" data-scramble scramble-mapping="$AlphGalactic" onclick="openTab(event, 'Test')">Test</button>
+        <button data-scramble scramble-mappings="$AlphGalactic" class="tablinks" onclick="openTab(event, 'OODI')">OODI</button>
+        <button data-scramble scramble-mappings="$AlphGalactic" class="tablinks" onclick="openTab(event, 'DCN')">DataCom</button>
+        <button data-scramble scramble-mappings="$AlphGalactic" class="tablinks" onclick="openTab(event, 'GUI')">GUI</button>
     </div>
 
+
     <div id="WP" class="tabcontent" style="display: block;">
-        <h3>Web Programming</h3>
-        <a class="container" href="Web Programming/Lab 1 C.html" data-scramble>Lab 1 C</a> <hr />
+        <h3>Web <br> Programming</h3>
+        <a class="container" href="Web Programming/Lab 1 C.html" data-scramble>Lab 1 C</a> <hr>
         <a class="container" href="Lab 1 C.html">Lab 1 C</a>
     </div>
 
@@ -82,16 +82,16 @@
     </div>
 
     <script>
-    const galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
-    const binary = "01";
-    const emoji = "✨⭐🌟💫☄️🌠";
+    window.galactic = "ᔑʖᓵ↸ᒷ⎓ ⊣⍑╎⋮ꖌꖎᒲリ𝙹!¡ᑑ∷ᓭℸ ̣⚍ ⍊∴ ̇/||⨅";
+    window.AlphGalactic = "A:ᔑ,B:ʖ,C:ᓵ,D:↸,E:ᒷ,F:⎓,G:⊣,H:⍑,I:╎,J:⋮,K:ꖌ,L:ꖎ,M:ᒲ,N:リ,O:],P:!,Q:¡,R:ᑑ,S:∷,T:ᓭ,U:ℸ,̣V:⚍,W:⍊,X:∴,Y:̇/,Z:||";
+    window.GalacticAlph = "ᔑ:A,ʖ:B,ᓵ:C,↸:D,ᒷ:E,⎓:F,⊣:G,⍑:H,╎:I,⋮:J,ꖌ:K,ꖎ:L,ᒲ:M,リ:N,]:O,!:P,¡:Q,ᑑ:R,∷:S,ᓭ:T,ℸ:U,̣:V,⚍:W,⍊:X,∴:Y,̇/:Z,||:Z";
+    window.binary = "01";
+    window.emoji = "✨⭐🌟💫☄️🌠";
     
-    window.galactic = galactic;
-    window.binary = binary;
-    window.emoji = emoji;
     </script>
 
     <script src="tabs.js"></script>
     <script src="text-scrambler.js"></script>
+    <script src="font-scrambler.js"></script>
 </body>
 </html>
