@@ -175,7 +175,7 @@ hr{
 
 /* Ensure active tab stays visually distinct when focused */
 .tab button.active:focus {
-  outline-color: #819EEE;
+  outline-color: #FFFFFF;
 }
 
 /*additional testing*/
