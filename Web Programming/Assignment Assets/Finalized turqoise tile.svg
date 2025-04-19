@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="a" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 300 300">
+  <defs>
+    <style>
+      .c {
+        fill: none;
+      }
+
+      .d {
+        fill: #98d5c9;
+      }
+
+      .e {
+        fill: #c1e3cd;
+      }
+
+      .f {
+        fill: url(#b);
+      }
+    </style>
+    <pattern id="b" data-name="New Pattern" x="0" y="0" width="300" height="300" patternUnits="userSpaceOnUse" viewBox="0 0 300 300">
+      <g>
+        <rect class="c" width="300" height="300"/>
+        <rect class="e" width="300" height="300"/>
+        <g>
+          <polygon class="c" points="14.62 0 0 14.62 0 45.38 45.38 0 14.62 0"/>
+          <polygon class="c" points="254.62 0 0 254.62 0 285.38 285.38 0 254.62 0"/>
+          <polygon class="c" points="285.38 300 300 285.38 300 254.62 254.62 300 285.38 300"/>
+          <polygon class="c" points="194.62 0 0 194.62 0 225.38 225.38 0 194.62 0"/>
+          <polygon class="c" points="105.38 300 300 105.38 300 74.62 74.62 300 105.38 300"/>
+          <polygon class="c" points="225.38 300 300 225.38 300 194.62 194.62 300 225.38 300"/>
+          <polygon class="c" points="134.62 0 0 134.62 0 165.38 165.38 0 134.62 0"/>
+          <polygon class="c" points="165.38 300 300 165.38 300 134.62 134.62 300 165.38 300"/>
+          <polygon class="c" points="45.38 300 300 45.38 300 14.62 14.62 300 45.38 300"/>
+          <polygon class="c" points="74.62 0 0 74.62 0 105.38 105.38 0 74.62 0"/>
+          <polygon class="d" points="0 0 0 14.62 14.62 0 0 0"/>
+          <polygon class="d" points="45.38 0 0 45.38 0 60 60 0 45.38 0"/>
+          <polygon class="d" points="60 0 0 60 0 74.62 74.62 0 60 0"/>
+          <polygon class="d" points="105.38 0 0 105.38 0 120 120 0 105.38 0"/>
+          <polygon class="d" points="120 0 0 120 0 134.62 134.62 0 120 0"/>
+          <polygon class="d" points="165.38 0 0 165.38 0 180 180 0 165.38 0"/>
+          <polygon class="d" points="180 0 0 180 0 194.62 194.62 0 180 0"/>
+          <polygon class="d" points="225.38 0 0 225.38 0 240 240 0 225.38 0"/>
+          <polygon class="d" points="240 0 0 240 0 254.62 254.62 0 240 0"/>
+          <polygon class="d" points="300 0 285.38 0 0 285.38 0 300 0 300 300 0 300 0"/>
+          <polygon class="d" points="300 14.62 300 0 0 300 14.62 300 300 14.62"/>
+          <polygon class="d" points="60 300 300 60 300 45.38 45.38 300 60 300"/>
+          <polygon class="d" points="74.62 300 300 74.62 300 60 60 300 74.62 300"/>
+          <polygon class="d" points="120 300 300 120 300 105.38 105.38 300 120 300"/>
+          <polygon class="d" points="134.62 300 300 134.62 300 120 120 300 134.62 300"/>
+          <polygon class="d" points="180 300 300 180 300 165.38 165.38 300 180 300"/>
+          <polygon class="d" points="194.62 300 300 194.62 300 180 180 300 194.62 300"/>
+          <polygon class="d" points="240 300 300 240 300 225.38 225.38 300 240 300"/>
+          <polygon class="d" points="254.62 300 300 254.62 300 240 240 300 254.62 300"/>
+          <polygon class="d" points="300 300 300 285.38 285.38 300 300 300"/>
+        </g>
+      </g>
+    </pattern>
+  </defs>
+  <rect class="f" width="300" height="300"/>
+</svg>
