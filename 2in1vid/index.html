@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Play-twice WebM builder (in browser)</title>
+<style>
+:root{--bg:#14171a;--panel:#1d2227;--line:#323a42;--ink:#e6e9ec;--dim:#9aa5af;--accent:#7fd1c4;--warn:#f0b35a;--bad:#f07a6a}
+@media (prefers-color-scheme:light){:root{--bg:#eef0f2;--panel:#fff;--line:#c9d0d6;--ink:#1a2026;--dim:#56616b;--accent:#0e7a6b;--warn:#a86400;--bad:#b3341f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Segoe UI",system-ui,sans-serif}
+main{max-width:980px;margin:0 auto;padding:28px 18px 60px}
+h1{font:600 26px/1.2 Georgia,serif;margin:0 0 6px}
+.lead{color:var(--dim);margin:0 0 22px;max-width:64ch}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:760px){.grid{grid-template-columns:1fr}}
+fieldset{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:14px 16px 6px;margin:0}
+legend{padding:0 6px;font-weight:600}
+label{display:block;margin:0 0 12px;font-size:13px;color:var(--dim)}
+input{display:block;width:100%;margin-top:4px;padding:7px 9px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);font:14px Consolas,monospace}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button,a.btn{display:inline-block;padding:9px 16px;border-radius:4px;border:1px solid var(--accent);background:var(--accent);color:#0c1513;font:600 14px inherit;cursor:pointer;text-decoration:none}
+button:disabled{opacity:.4;cursor:not-allowed}
+.bar{display:flex;gap:10px;align-items:center;margin:18px 0 10px;flex-wrap:wrap}
+#status{padding:8px 12px;border-left:3px solid var(--line);background:var(--panel);border-radius:0 4px 4px 0;margin-bottom:10px}
+#status.ok{border-color:var(--accent)}#status.bad{border-color:var(--bad)}#status.warn{border-color:var(--warn)}
+pre{margin:0;padding:14px;background:#0d1012;color:#cfe3de;border:1px solid var(--line);border-radius:6px;overflow:auto;height:260px;font:12px/1.4 Consolas,monospace;white-space:pre-wrap}
+</style>
+</head>
+<body>
+<main>
+<h1>Play-twice WebM builder</h1>
+<p class="lead">Runs entirely in your browser with ffmpeg.wasm (single-thread core). Your files never leave the page. Encoding is much slower than native ffmpeg, so keep clips short.</p>
+
+<div class="grid">
+<fieldset><legend>Files</legend>
+<label>Original My_Video18.webm (stub source)<input id="orig" type="file" accept=".webm,video/webm"></label>
+<label>Visible video (p1)<input id="vis" type="file" accept="video/*"></label>
+<label>Hidden video (p2)<input id="hid" type="file" accept="video/*"></label>
+<label>Output name<input id="out" value="final.webm"></label>
+</fieldset>
+<fieldset><legend>Timing and quality</legend>
+<div class="row">
+<label>p1 start (s)<input id="s1" type="number" min="0" step="0.1" value="0"></label>
+<label>p1 length (s)<input id="l1" type="number" min="1" step="0.1" value="15"></label>
+<label>p2 start (s)<input id="s2" type="number" min="0" step="0.1" value="0"></label>
+<label>p2 length (s)<input id="l2" type="number" min="1" step="0.1" value="15"></label>
+<label>Width<input id="w" type="number" step="2" value="960"></label>
+<label>Height<input id="h" type="number" step="2" value="720"></label>
+<label>Video bitrate<input id="br" value="1M"></label>
+<label>Blip volume<input id="vol" type="number" min="0.001" max="1" step="0.005" value="0.01"></label>
+</div>
+<label>Blip length (s)<input id="bl" type="number" min="0.1" step="0.1" value="0.5"></label>
+</fieldset>
+</div>
+
+<div class="bar"><button id="go">Build</button><span id="dlwrap"></span></div>
+<div id="status">Ready. Choose your files and press Build. The first run downloads the ffmpeg core (about 30 MB).</div>
+<pre id="log" aria-label="Log"></pre>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@ffmpeg/util@0.12.1/dist/umd/index.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const logEl = $("log");
+let buf = [];
+const say = t => { logEl.textContent += t + "\n"; logEl.scrollTop = logEl.scrollHeight; };
+const status = (t, c = "") => { $("status").textContent = t; $("status").className = c; };
+const parseBr = s => { const m = /^(\d+(?:\.\d+)?)([kKmM]?)$/.exec(s.trim()); return m ? parseFloat(m[1]) * ({k:1e3,m:1e6}[m[2].toLowerCase()] || 1) : NaN; };
+const ext = f => (f.name.match(/\.[A-Za-z0-9]+$/) || [".bin"])[0];
+const bytes = f => f.arrayBuffer().then(b => new Uint8Array(b));
+
+let ffmpeg = null;
+async function load() {
+  if (ffmpeg) return;
+  const { FFmpeg } = FFmpegWASM, { toBlobURL } = FFmpegUtil;
+  ffmpeg = new FFmpeg();
+  ffmpeg.on("log", ({ message }) => { buf.push(message); });
+  const core = "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd";
+  await ffmpeg.load({
+    coreURL: await toBlobURL(core + "/ffmpeg-core.js", "text/javascript"),
+    wasmURL: await toBlobURL(core + "/ffmpeg-core.wasm", "application/wasm"),
+    classWorkerURL: await toBlobURL("https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/814.ffmpeg.js", "text/javascript")
+  });
+}
+async function run(args, echo = true) {
+  buf = [];
+  const code = await ffmpeg.exec(args);
+  if (echo) say(buf.filter(l => /frame=|error|Error|Invalid|Unknown|Unrecognized|Duration/.test(l)).slice(-6).join("\n"));
+  return { code, text: buf.join("\n") };
+}
+async function duration(name) {
+  const { text } = await run(["-hide_banner", "-i", name], false);
+  const m = /Duration: (\d+):(\d+):([\d.]+)/.exec(text);
+  return m ? (+m[1]) * 3600 + (+m[2]) * 60 + parseFloat(m[3]) : NaN;
+}
+// size of the Vorbis CodecPrivate (EBML ID 63 A2, Xiph lacing starts with 0x02)
+function vorbisHeaderSize(u) {
+  const end = Math.min(u.length, 60000);
+  for (let i = 0; i < end - 10; i++) {
+    if (u[i] === 0x63 && u[i + 1] === 0xA2) {
+      let b = u[i + 2], n = 1; while (n <= 8 && !(b & (0x80 >> (n - 1)))) n++;
+      let v = b & ((0x80 >> (n - 1)) - 1); for (let k = 1; k < n; k++) v = v * 256 + u[i + 2 + k];
+      if (v > 100 && v < 30000 && u[i + 2 + n] === 0x02) return v;
+    }
+  }
+  return -1;
+}
+// 16-bit mono WAV with an 880 Hz tone at the same level as ffmpeg's sine filter (amplitude 0.125) times vol
+function blipWav(sec, vol) {
+  const sr = 44100, n = Math.round(sec * sr), d = new DataView(new ArrayBuffer(44 + n * 2));
+  const w = (o, s) => [...s].forEach((c, i) => d.setUint8(o + i, c.charCodeAt(0)));
+  w(0, "RIFF"); d.setUint32(4, 36 + n * 2, true); w(8, "WAVEfmt "); d.setUint32(16, 16, true); d.setUint16(20, 1, true);
+  d.setUint16(22, 1, true); d.setUint32(24, sr, true); d.setUint32(28, sr * 2, true); d.setUint16(32, 2, true); d.setUint16(34, 16, true);
+  w(36, "data"); d.setUint32(40, n * 2, true);
+  for (let i = 0; i < n; i++) d.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * 880 * i / sr) * 0.125 * vol * 32767), true);
+  return new Uint8Array(d.buffer);
+}
+
+async function build() {
+  const v = id => $(id).value.trim(), n = id => parseFloat(v(id));
+  const fo = $("orig").files[0], fv = $("vis").files[0], fh = $("hid").files[0];
+  if (!fo || !fv || !fh) return status("Choose all three files first.", "bad");
+  const l1 = n("l1"), l2 = n("l2"), w = n("w"), h = n("h"), vol = n("vol"), bl = n("bl"), bps = parseBr(v("br"));
+  if (!(l1 > 0 && l2 > 0)) return status("Lengths must be positive.", "bad");
+  if (l2 > l1) return status("p2 must not be longer than p1.", "bad");
+  if (w % 2 || h % 2) return status("Width and height must be even for VP8.", "bad");
+  if (isNaN(bps)) return status("Bitrate looks wrong. Use something like 1M or 800k.", "bad");
+  if (!/\.webm$/i.test(v("out"))) return status("Output name must end in .webm.", "bad");
+
+  $("go").disabled = true; $("dlwrap").innerHTML = ""; logEl.textContent = "";
+  try {
+    status("Loading ffmpeg core...", "warn"); await load();
+
+    // encoder check
+    const enc = (await run(["-hide_banner", "-encoders"], false)).text;
+    const hasVpx = /\blibvpx\b/.test(enc), hasLv = /\blibvorbis\b/.test(enc), hasNv = /\bvorbis\b/.test(enc.replace(/libvorbis/g, ""));
+    say(`encoders: libvpx=${hasVpx} libvorbis=${hasLv} native vorbis=${hasNv}`);
+    if (!hasVpx) throw new Error("This ffmpeg core has no libvpx (VP8) encoder, so it can't build the video.");
+    if (!hasLv && !hasNv) throw new Error("This ffmpeg core has no Vorbis encoder, so it can't make matching audio. Use the PowerShell script version instead.");
+    const aud = hasLv ? ["-c:a", "libvorbis", "-q:a", "3"] : ["-c:a", "vorbis", "-strict", "-2"];
+    if (!hasLv) say("libvorbis missing; using ffmpeg's native vorbis encoder for both parts (untested for this trick).");
+
+    // stub
+    const o = await bytes(fo);
+    if (o.length < 646403 || o[646399] !== 0x1A || o[646400] !== 0x45 || o[646401] !== 0xDF || o[646402] !== 0xA3)
+      throw new Error("That file isn't My_Video18.webm (no second EBML header at offset 646399).");
+    const stub = o.slice(646144, 646399);
+    say("stub: " + stub.length + " bytes");
+
+    const vf = `scale=${w}:${h},fps=30,setsar=1`;
+    const common = ["-c:v", "libvpx", "-b:v", v("br"), "-deadline", "realtime", "-cpu-used", "5", "-pix_fmt", "yuv420p", "-vf", vf];
+    const visName = "vis" + ext(fv), hidName = "hid" + ext(fh);
+    await ffmpeg.writeFile(visName, await bytes(fv));
+    await ffmpeg.writeFile(hidName, await bytes(fh));
+    await ffmpeg.writeFile("blip.wav", blipWav(bl, vol));
+
+    status("Encoding p1...", "warn");
+    let r = await run(["-y", "-ss", v("s1"), "-i", visName, "-t", v("l1"), ...common, ...aud, "-ar", "44100", "-ac", "2", "p1.webm"]);
+    if (r.code !== 0) throw new Error("p1 encode failed (does the visible video have audio?)");
+
+    status("Encoding p2...", "warn");
+    r = await run(["-y", "-ss", v("s2"), "-i", hidName, "-i", "blip.wav", "-map", "0:v", "-map", "1:a", "-t", v("l2"), ...common, ...aud, "-ar", "44100", "-ac", "2", "p2.webm"]);
+    if (r.code !== 0) throw new Error("p2 encode failed");
+
+    const p1 = await ffmpeg.readFile("p1.webm"), p2 = await ffmpeg.readFile("p2.webm");
+    const h1 = vorbisHeaderSize(p1), h2 = vorbisHeaderSize(p2);
+    say(`audio header sizes: p1=${h1} p2=${h2}`);
+    if (h1 < 0 || h2 < 0) say("Could not read an audio header size; skipping that check.");
+    else if (h1 !== h2) throw new Error("Audio headers differ, so the join would sound garbled.");
+    const d1 = await duration("p1.webm"), d2 = await duration("p2.webm");
+    say(`durations: p1=${d1}s p2=${d2}s`);
+    if (d2 > d1) throw new Error("p2 came out longer than p1 (the visible clip may be shorter than requested).");
+
+    const out = new Uint8Array(p1.length + stub.length + p2.length);
+    out.set(p1, 0); out.set(stub, p1.length); out.set(p2, p1.length + stub.length);
+    const url = URL.createObjectURL(new Blob([out], { type: "video/webm" }));
+    $("dlwrap").innerHTML = `<a class="btn" download="${v("out").replace(/"/g, "")}" href="${url}">Download ${(out.length / 1048576).toFixed(1)} MB</a>`;
+    status("Done. Test it in mpv and Discord (first play, then replay). Don't re-encode it.", "ok");
+  } catch (e) {
+    say("ERROR: " + (e && e.message || e)); status(String(e && e.message || e), "bad");
+  } finally { $("go").disabled = false; }
+}
+$("go").onclick = build;
+</script>
+</body>
+</html>
