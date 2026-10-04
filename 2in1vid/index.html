@@ -72,6 +72,23 @@ const parseBr = s => { const m = /^(\d+(?:\.\d+)?)([kKmM]?)$/.exec(s.trim()); re
 const ext = f => (f.name.match(/\.[A-Za-z0-9]+$/) || [".bin"])[0];
 const bytes = f => f.arrayBuffer().then(b => new Uint8Array(b));
 
+async function probe(url) {
+  say("probe " + url);
+  try {
+    const r = await fetch(url); const t = await r.clone().text();
+    say(`  fetch: ${r.status} ${r.headers.get("content-type")} ${t.length} chars, starts: ${JSON.stringify(t.slice(0, 50))}`);
+  } catch (e) { say("  fetch failed: " + e); }
+  await new Promise(res => {
+    let w;
+    try {
+      const code = `try{importScripts(${JSON.stringify(url)});postMessage("importScripts ok, createFFmpegCore is "+typeof self.createFFmpegCore)}catch(e){postMessage("importScripts ERROR: "+e)}`;
+      w = new Worker(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
+    } catch (e) { say("  worker create failed: " + e); return res(); }
+    const t = setTimeout(() => { say("  probe timed out"); w.terminate(); res(); }, 15000);
+    w.onmessage = e => { say("  " + e.data); clearTimeout(t); w.terminate(); res(); };
+    w.onerror = e => { say("  worker error: " + (e.message || e)); clearTimeout(t); res(); };
+  });
+}
 let ffmpeg = null;
 async function load() {
   if (ffmpeg) return;
@@ -84,6 +101,7 @@ async function load() {
     ["CDN core directly, blob worker", async () => ({ coreURL: core + "/ffmpeg-core.js", wasmURL: core + "/ffmpeg-core.wasm", classWorkerURL: await toBlobURL(wk, "text/javascript") })],
     ["same-origin ./ffmpeg/ folder", async () => ({ coreURL: here("ffmpeg-core.js"), wasmURL: here("ffmpeg-core.wasm"), classWorkerURL: here("814.ffmpeg.js") })]
   ];
+  for (const u of [core + "/ffmpeg-core.js", here("ffmpeg-core.js")]) await probe(u);
   for (const [name, mk] of tries) {
     const f = new FFmpeg();
     f.on("log", ({ message }) => { buf.push(message); });
