@@ -11,9 +11,29 @@ renderer.setSize(innerWidth,innerHeight);
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 
 document.body.appendChild(renderer.domElement);
+const canvas = document.createElement('canvas');
+canvas.width = 512;
+canvas.height = 717;
+const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#ffffff';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+const lines = ['COMING', 'SOON', '😭'];
+const lineHeight = 90;
+const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
+
+ctx.font = 'bold 80px Georgia, serif';
+ctx.textAlign = 'center';
+ctx.textBaseline = 'middle';
+ctx.fillStyle = '#1a1d22';
+
+lines.forEach((line, i) => {
+  ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
+});
+const texture = new THREE.CanvasTexture(canvas);
+texture.colorSpace = THREE.SRGBColorSpace;
 const box = new THREE.Mesh(
     new THREE.BoxGeometry(1,1.4,0.1),
-    new THREE.MeshStandardMaterial({color:"#ffffff"})
+    new THREE.MeshStandardMaterial({map:texture})
 );
 
 scene.add(box);
