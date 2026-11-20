@@ -1,0 +1,29 @@
+:root {
+  --sage: #9bb786;
+  --sage-dark: #7fa066;
+  --mint: #cad9bf;
+  --mint-soft: #dfe9d6;
+  --ink: #1a2116;
+  --ink-soft: #3c4a34;
+  --ring: #eef2ea;
+  --shadow: rgba(20, 30, 15, 0.28);
+}
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sage-dark) transparent;
+}
+html::-webkit-scrollbar {
+  width: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: #7fa066;
+  border-radius: 999px;
+}
+map area {
+  cursor: help;
+}

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Heatplate v1.1 · BOM with part name</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 16px;
+            background: #f5f7fa;
+            color: #1e2b3c;
+        }
+        h1 {
+            font-size: 1.9rem;
+            margin: 0 0 4px 0;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .sub {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: #2c3e50;
+            background: #e9edf2;
+            padding: 8px 16px;
+            border-radius: 40px;
+        }
+        .copy-hint {
+            background: #2c3e50;
+            color: white;
+            padding: 5px 16px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .copy-hint i { font-style: normal; font-size: 1.2rem; }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border: 1px solid #d0dbe8;
+        }
+        th {
+            background-color: #1e2f40;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 16px 6px;
+            white-space: nowrap;
+        }
+        td {
+            padding: 14px 6px;
+            border-bottom: 1px solid #dee7ef;
+            word-break: break-word;
+            vertical-align: middle;
+        }
+        tr:last-child td { border-bottom: none; }
+
+        /* column sizing */
+        th:nth-child(1), td:nth-child(1) { width: 50px; text-align: center; }
+        th:nth-child(2), td:nth-child(2) {  } /* part name – clickable */
+        th:nth-child(3), td:nth-child(3) { max-width: 140px; } /* LCSC */
+        th:nth-child(4), td:nth-child(4) {  } /* footprint */
+        th:nth-child(5), td:nth-child(5) { width: 60px; text-align: center; } /* qty */
+
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            accent-color: #1e2f40;
+        }
+
+        /* clickable part name cell */
+        .clickable-name {
+            cursor: pointer;
+            background-color: #fafcff;
+            transition: background 0.15s;
+            border-radius: 8px;
+            font-weight: 500;
+            color: #003b6f;
+        }
+        .clickable-name:hover {
+            background-color: #e3f0ff;
+        }
+        .clickable-name:active {
+            background-color: #c9e0ff;
+        }
+        .part-name-display {
+            display: inline-block;
+            max-width: 220px;
+            word-break: break-word;
+        }
+        .lcsc-muted {
+            color: #1e2b3c;
+            font-weight: 400;
+            font-size: 0.85rem;
+            opacity: 0.75;
+        }
+        .nan-placeholder {
+            color: #9aa9b9;
+            font-style: italic;
+        }
+
+        /* floating toast */
+        .copy-toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e2f40;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 60px;
+            font-size: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: opacity 0.2s;
+            border: 1px solid #587b9c;
+            max-width: 92vw;
+            flex-wrap: wrap;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        .copy-toast button {
+            background: #4f9e8a;
+            border: none;
+            color: white;
+            padding: 8px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            border: 1px solid #317a66;
+            transition: 0.1s;
+        }
+        .copy-toast button:hover { background: #3f8a77; }
+        .copy-toast button:active { background: #2f6b5b; }
+        .toast-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            body { margin: 8px; }
+            h1 { font-size: 1.6rem; }
+            th { font-size: 0.8rem; padding: 12px 3px; }
+            td { font-size: 0.85rem; padding: 12px 3px; }
+            th:nth-child(1), td:nth-child(1) { width: 42px; }
+            .part-name-display { max-width: 130px; }
+            .copy-toast { font-size: 0.9rem; padding: 10px 18px; }
+        }
+        td:nth-child(4) { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem; color: #2a4059; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Heatplate v1.1 · part checklist</h1>
+    <div class="sub">
+        <span>✅ check &nbsp; | &nbsp; 📋 <strong>tap part name</strong> to copy</span>
+        <span class="copy-hint"><i>📲</i> copy name + paste</span>
+    </div>
+
+    <table id="bom-table">
+        <thead>
+            <tr>
+                <th>Done</th>
+                <th>Part name (click to copy)</th>
+                <th>LCSC#</th>
+                <th>Footprint</th>
+                <th>Qty</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            <!-- filled from JS with enriched CSV data -->
+        </tbody>
+    </table>
+
+    <!-- floating paste toast -->
+    <div id="copyToast" class="copy-toast toast-hidden">
+        <span id="toastMessage">📋 Copy part description</span>
+        <button id="pasteButton">📎 Paste name</button>
+    </div>
+
+    <script>
+        (function() {
+            // ----- enriched dataset: merge original checklist with CSV descriptions (part name) -----
+            // base parts from previous checklist (footprint, lcsc, qty) + we add 'partName' from CSV
+            const parts = [
+                { lcsc: 'C131251', footprint: 'LED_SMD:LED_Avago_PLCC4_3.2x2.8mm_CW', qty: 1, partName: '15-22SURSYGC/S530-A2/TR8  (Red/Yellow Green LED)' },
+                { lcsc: 'C136682', footprint: 'Button_Switch_THT:SW_PUSH_6mm', qty: 2, partName: 'K2-1102DP-G3SW-04  Tactile Switch SPST' },
+                { lcsc: 'C1711', footprint: 'Capacitor_SMD:C_0805_2012Metric', qty: 5, partName: 'CL21B104KBCNNNC 100nF 50V X7R' },
+                { lcsc: 'C17414', footprint: 'Resistor_SMD:R_0805_2012Metric', qty: 5, partName: '0805W8F1002T5E 10kΩ 1%' },
+                { lcsc: 'C1743', footprint: 'Capacitor_SMD:C_0805_2012Metric', qty: 1, partName: '0805B471K500NT 470pF 50V X7R' },
+                { lcsc: 'C17513', footprint: 'Resistor_SMD:R_0805_2012Metric', qty: 4, partName: '0805W8F1001T5E 1kΩ 1%' },
+                { lcsc: 'C17673', footprint: 'Resistor_SMD:R_0805_2012Metric', qty: 4, partName: '0805W8F4701T5E 4.7kΩ 1%' },
+                { lcsc: 'C17714', footprint: 'Resistor_SMD:R_0805_2012Metric', qty: 2, partName: '0805W8F470JT5E 47Ω 1%' },
+                { lcsc: 'C189475', footprint: 'Package_QFP:TQFP-48_7x7mm_P0.5mm', qty: 1, partName: 'ATMEGA4809-AFR 8-bit MCU, TQFP-48' },
+                { lcsc: 'C2718488', footprint: 'User:0.91Inch-OLED-Module', qty: 1, partName: '2.54-1*4P Female Header (for OLED)' },
+                { lcsc: 'C2880527', footprint: 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm', qty: 1, partName: 'WSP4409A P-Channel MOSFET 30V' },
+                { lcsc: 'C2922480', footprint: 'Capacitor_SMD:C_0805_2012Metric', qty: 1, partName: '(no match) placeholder capacitor' },
+                { lcsc: 'C351450', footprint: 'Package_TO_SOT_SMD:SOT-89-3', qty: 1, partName: 'AMS1117-5.0S 5V LDO' },
+                { lcsc: 'C381115', footprint: 'Connector_BarrelJack:BarrelJack_Horizontal', qty: 1, partName: 'DC-005-5A-2.5 Power jack' },
+                { lcsc: 'C444722', footprint: 'Package_TO_SOT_SMD:SOT-23', qty: 1, partName: 'SS8050 NPN transistor' },
+                { lcsc: 'C49257', footprint: 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical', qty: 1, partName: '2.54-1*3P Pin header 3pos' },
+                { lcsc: 'C551332', footprint: 'MountingHole:MountingHole_3.2mm_M3', qty: 4, partName: 'M3*12 standoffs / spacer' },
+                { lcsc: 'C64885', footprint: 'Diode_SMD:D_SOD-123', qty: 4, partName: 'B5819W Schottky diode 40V' },
+                { lcsc: 'C695837', footprint: 'Package_SO:SOIC-8_3.9x4.9mm_P1.27mm', qty: 1, partName: 'DS18B20Z temperature sensor' },
+                { lcsc: 'C75856', footprint: 'Package_TO_SOT_THT:TO-92_Inline', qty: 1, partName: 'LMT85LP analog temp sensor' },
+                { lcsc: 'C81137', footprint: 'Package_TO_SOT_SMD:TO-252-2', qty: 1, partName: 'IRLR8726TRPBF N-Channel 30V' },
+                { lcsc: 'C88760', footprint: 'Capacitor_THT:CP_Radial_D8.0mm_P3.50mm', qty: 4, partName: '16ZLH680MEFC8X16 680µF 16V' },
+                { lcsc: 'C88799', footprint: 'Capacitor_SMD:CP_Elec_4x5.4', qty: 2, partName: '16SEV22M4X5.5 22µF 16V alu poly' },
+                { lcsc: 'C910846', footprint: 'Fuse:Fuse_2920_7451Metric', qty: 1, partName: 'BSMD2920-500-16V PTC resettable fuse' },
+                { lcsc: 'nan', footprint: 'Connector_PinHeader_2.54mm:PinHeader_1x03_P2.54mm_Vertical', qty: 1, partName: 'Pin header 1x03 (extra) BOOMELE' },
+                { lcsc: 'nan', footprint: 'TestPoint:TestPoint_Pad_D1.5mm', qty: 3, partName: 'Test pad 1.5mm (3x)' }
+            ];
+
+            // Additional part name improvements from CSV (manual merge, but we also inject via mapping)
+            // Also include partial match row from CSV (C2691448 not in original, but we keep original 1x03 as separate.
+            // For the last two nan entries we set meaningful part names.
+
+            // Override specific with more accurate CSV description if needed:
+            // C2718488: in CSV it's "Female Header 4 Position..." – we keep "2.54-1*4P Female Header"
+            // C2880527 description: "P-Channel 30V 15A ..."
+            // C81137: "IRLR8726TRPBF N-Channel 30V 86A"
+            // C444722: "SS8050 Bipolar Transistor"
+            // C75856: "LMT85LP, -50°C~+150°C"
+            // C695837: "DS18B20Z(UMW) SOIC-8"
+            // Already covered.
+
+            // For copy we want part name to be descriptive, but also include manufacturer code.
+
+            const tbody = document.getElementById('table-body');
+
+            function render() {
+                let html = '';
+                parts.forEach((p, idx) => {
+                    const lcscDisplay = (p.lcsc && p.lcsc !== 'nan') ? p.lcsc : '<span class="nan-placeholder">—</span>';
+                    const lcscRaw = (p.lcsc && p.lcsc !== 'nan') ? p.lcsc : '';
+                    // part name for copy: use p.partName, fallback to footprint if missing (but we have it)
+                    const partNameRaw = p.partName || p.footprint.split(':').pop() || 'component';
+                    // display name (might be truncated? but we show full)
+                    const partNameDisplay = p.partName || '—';
+
+                    html += `<tr>
+                        <td><input type="checkbox" aria-label="check"></td>
+                        <td class="clickable-name" data-copy="${partNameRaw.replace(/"/g, '')}" data-row="${idx}">
+                            <span class="part-name-display">${partNameDisplay}</span>
+                        </td>
+                        <td><span class="lcsc-muted">${lcscDisplay}</span></td>
+                        <td>${p.footprint}</td>
+                        <td>${p.qty}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            }
+            render();
+
+            // ---------- copy logic (part name) + toast with paste button ----------
+            const toastEl = document.getElementById('copyToast');
+            const toastMsg = document.getElementById('toastMessage');
+            const pasteBtn = document.getElementById('pasteButton');
+            let lastCopiedText = '';
+            let hideTimer = null;
+
+            function showToast(message, copiedText) {
+                if (hideTimer) clearTimeout(hideTimer);
+                toastMsg.innerText = message;
+                lastCopiedText = copiedText || '';
+                toastEl.classList.remove('toast-hidden');
+                hideTimer = setTimeout(() => {
+                    toastEl.classList.add('toast-hidden');
+                }, 7000);
+            }
+
+            // attach listeners to clickable-name cells
+            function attachNameListeners() {
+                document.querySelectorAll('.clickable-name').forEach(cell => {
+                    cell.removeEventListener('click', nameClickHandler);
+                    cell.addEventListener('click', nameClickHandler);
+                });
+            }
+
+            function nameClickHandler(e) {
+                const cell = e.currentTarget;
+                const copyText = cell.dataset.copy;   // part name raw
+                if (!copyText || copyText.trim() === '') {
+                    showToast('⚠️ No part name available', '');
+                    return;
+                }
+
+                navigator.clipboard.writeText(copyText).then(() => {
+                    showToast(`✅ Copied: ${copyText.substring(0, 32)}${copyText.length > 32 ? '…' : ''}`, copyText);
+                }).catch(() => {
+                    // fallback
+                    showToast(`📋 "${copyText.substring(0, 28)}…" (tap Paste)`, copyText);
+                });
+            }
+
+            // Paste button: write lastCopiedText back to clipboard
+            pasteBtn.addEventListener('click', async () => {
+                if (!lastCopiedText) {
+                    alert('No part name copied yet. Tap on any part name first.');
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(lastCopiedText);
+                    const original = pasteBtn.innerText;
+                    pasteBtn.innerText = '✔️ Copied!';
+                    setTimeout(() => { pasteBtn.innerText = original; }, 800);
+                } catch (err) {
+                    alert('Unable to copy. Please copy manually.');
+                }
+            });
+
+            // optional: hide toast when clicked on background
+            toastEl.addEventListener('click', (e) => {
+                if (e.target === pasteBtn) return;
+                toastEl.classList.add('toast-hidden');
+                if (hideTimer) clearTimeout(hideTimer);
+            });
+
+            attachNameListeners();
+
+            // ensure listeners survive if any future update (none planned)
+        })();
+    </script>
+    <div style="margin-top: 20px; font-size: 0.85rem; color: #446688; display: flex; justify-content: space-between;">
+        <span>🔹 Part name column is clickable — copies description + mpn</span>
+        <span>📦 v1.1 BOM / enriched with CSV part names</span>
+    </div>
+</body>
+</html>
