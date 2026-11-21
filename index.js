@@ -17,7 +17,7 @@ canvas.height = 717;
 const ctx = canvas.getContext('2d');
 ctx.fillStyle = '#ffffff';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-const lines = ['COMING', 'SOON', '😭'];
+const lines = ['In', 'Maintenace'];
 const lineHeight = 90;
 const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
 
