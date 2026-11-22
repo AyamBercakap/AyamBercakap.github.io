@@ -17,14 +17,6 @@ const sun = new THREE.DirectionalLight(0xffffff,2);
 sun.position.set(2,3,4);
 scene.add(sun);
 
-const pageWidth = 1.28;
-const pageHeight = 1.71;
-const pageDepth = 0.003;
-const pageSegments = 30;
-const segmentWidth = pageWidth/pageSegments
-const geometry = new THREE.BoxGeometry(pageWidth,pageHeight,pageDepth,pageSegments,2);
-geometry.translate(pageWidth/2,0,0);
-
 const canvas = document.createElement('canvas');
 canvas.width = 512;
 canvas.height = 717;
@@ -44,22 +36,60 @@ lines.forEach((line, i) => {
   ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
 });
 const texture = new THREE.CanvasTexture(canvas);
+texture.colorSpace = THREE.SRGBColorSpace;
 
+const pageWidth = 1.28;
+const pageHeight = 1.71;
+const pageDepth = 0.003;
+const pageSegments = 30;
+const segmentWidth = pageWidth/pageSegments
+const geometry = new THREE.BoxGeometry(pageWidth,pageHeight,pageDepth,pageSegments,2);
+geometry.translate(pageWidth/2,0,0);
+
+const position = geometry.attributes.position;
+const skinIndices = [];
+const skinWeights =[];
+for (let i=0;i<position.count;i++){
+    const t = position.getX(i)/segmentWidth;
+    const index = THREE.MathUtils.clamp(Math.floor(t),0,pageSegments-1);
+    const weight = THREE.MathUtils.clamp(t-index,0,1);
+    skinIndices.push(index,index+1,0,0);
+    skinWeights.push(1-weight,weight,0,0);
+}
+
+geometry.setAttribute("skinIndex",new THREE.Uint16BufferAttribute(skinIndices,4));
+geometry.setAttribute("skinWeight",new THREE.Float32BufferAttribute(skinWeights,4));
+
+const bones = [];
+for (let i=0; i<=pageSegments;i++){
+    const bone = new THREE.Bone();
+    bone.position.x=i===0?0:segmentWidth;
+    if (i>0)bones[i-1].add(bone);
+    bones.push(bone);
+}
+const skeleton = new THREE.Skeleton(bones);
 
 const side = new THREE.MeshStandardMaterial({color:"#ffffff"});
 const front = new THREE.MeshStandardMaterial({map:texture});
 const back = new THREE.MeshStandardMaterial({map:texture});
 
-const page = new THREE.Mesh(geometry,[side,side,side,side,front,back]);
+const page = new THREE.SkinnedMesh(geometry,[side,side,side,side,front,back]);
+page.add(bones[0]);
+page.bind(skeleton);
+page.frustumCulled = false;
 page.position.x = -pageWidth/2;
 scene.add(page);
 
 const timer = new THREE.Timer();
 renderer.setAnimationLoop(() =>{
-    const et = timer.getElapsed()
-    page.rotation.y = -((Math.sin(et)+1)/2)*Math.PI;
-    renderer.render(scene,camera);
     timer.update();
+    const et = timer.getElapsed();
+    const maxAngle = Math.PI * 0.80
+    bones[0].rotation.y = -((Math.sin(et)+1)/2)*maxAngle;
+    for (let i=1;i<bones.length;i++){
+        bones[i].rotation.y = - Math.sin(et)*0.04;
+    }
+    renderer.render(scene,camera);
 });
 addEventListener("resize",()=>{
     camera.aspect = innerWidth/innerHeight;
