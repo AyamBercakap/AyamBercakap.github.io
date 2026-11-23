@@ -54,38 +54,111 @@ for (let i=0;i<position.count;i++){
 geometry.setAttribute("skinIndex",new THREE.Uint16BufferAttribute(skinIndices,4));
 geometry.setAttribute("skinWeight",new THREE.Float32BufferAttribute(skinWeights,4));
 
-//old texture function, js more robust
-function face(lines, bg = "#ffffff", fg = "#1a1d22") { 
-  const canvas = document.createElement("canvas");
-  canvas.width = 512;
-  canvas.height = 684;                      
-  const ctx = canvas.getContext("2d");
-  ctx.fillStyle = bg;                        
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+const TEX_W = 1024;
+const TEX_H = 1368;
+const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
-  const lineHeight = 90;
-  const startY = canvas.height / 2 - ((lines.length - 1) * lineHeight) / 2;
+function paintText(ctx,lines,bg,fg){
+  const k = TEX_W/512;
+  ctx.fillStyle = bg;
+  ctx.fillRect(0,0,TEX_W,TEX_H);
 
-  ctx.font = "bold 80px Georgia, serif";
+  const lineHeight = 90*k;
+  const startY = TEX_H / 2 - ((lines.length - 1) * lineHeight)/2;
+  ctx.font = `bold ${80 * k}px Georgia, serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = fg;
+  lines.forEach((line,i)=>ctx.fillText(line, TEX_W / 2, startY + i * lineHeight));
+}
 
-  lines.forEach((line, i) => {
-    ctx.fillText(line, canvas.width / 2, startY + i * lineHeight);
-  });
+function paintImg(ctx, img, bg) {
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, TEX_W, TEX_H);
+  const iw = img.displayWidth || img.videoWidth || img.naturalWidth || img.width;
+  const ih = img.displayHeight || img.videoHeight || img.naturalHeight || img.height;
+  const s = Math.max(TEX_W / iw, TEX_H / ih);
+  const w = iw * s;
+  const h = ih * s;
+  ctx.drawImage(img, (TEX_W - w) / 2, (TEX_H - h) / 2, w, h);
+}
+
+const MIME = { gif: "image/gif", apng: "image/png", png: "image/png", webp: "image/webp" };
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+//for gifs and stuff
+async function playAnimated(url, texture, onFrame) {
+  const type = MIME[url.split("?")[0].split(".").pop().toLowerCase()];
+  if (!type || !(await ImageDecoder.isTypeSupported(type))) throw new Error("unsupported type");
+
+  const data = await (await fetch(url)).arrayBuffer();
+  const decoder = new ImageDecoder({ data, type });
+  await decoder.tracks.ready;
+  const count = decoder.tracks.selectedTrack.frameCount;
+
+  texture.userData.playing = true;
+  let i = 0;
+  let next = decoder.decode({ frameIndex: 0 });
+  while (texture.userData.playing) {
+    const { image } = await next;
+    const raw = image.duration / 1000;
+    const ms = raw <= 10 ? 100 : raw;
+    onFrame(image);
+    image.close();
+    i = (i + 1) % count;
+    next = decoder.decode({ frameIndex: i });
+    await sleep(ms);
+    while (document.hidden) await sleep(250);
+  }
+  decoder.close();
+}
+//detects if text or image
+function face(content, bg = "#ffffff", fg = "#1a1d22") { 
+  const canvas = document.createElement("canvas");
+  canvas.width = TEX_W;
+  canvas.height = TEX_H;                      
+  const ctx = canvas.getContext("2d");
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
-  return texture;
+  texture.anisotropy = maxAniso;
+  const spec = Array.isArray(content) ? { text: content }
+             : typeof content === "string" ? { image: content }
+             : content;
+  
+  paintText(ctx ,spec.text??[], bg, fg)
+
+    if (spec.image) {
+    const drawStatic = () => {
+      const img = new Image();
+      img.onload = () => { paintImg(ctx, img, bg); texture.needsUpdate = true; };
+      img.onerror = () => console.warn("Page image failed to load:", spec.image);
+      img.src = spec.image;
+    };
+
+    const animated = spec.animated ?? /\.(gif|apng|webp)(\?|$)/i.test(spec.image);
+    if (animated && "ImageDecoder" in window) {
+      playAnimated(spec.image, texture, (frame) => {
+        paintImg(ctx, frame, bg);
+        texture.needsUpdate = true;
+      }).catch((err) => {
+        console.warn("Animation failed, showing a still:", spec.image, err);
+        drawStatic();
+      });
+    } else {
+      drawStatic();                                 // Safari/iOS, or a normal image
+    }
+  }
+  return texture
 }
 
 //page declaration
 const sheets = [
-    {front: face(["In","Maintenance","🚧"],"#2b3a55","#ffffff"), back: face(["In","Maintenance","🚧"],"#2b3a55","#ffffff")},
-    {front: face(["Page", "1"], "#ffffff", "#2b3a55"),back: face(["Page","2"],"#ffffff", "#2b3a55")},
-    {front: face(["Page", "3"], "#ffffff", "#2b3a55"),back: face(["Page","4"],"#ffffff", "#2b3a55")},
-    {front: face(["Page", "5"], "#ffffff", "#2b3a55"),back: face(["The","End"],"#2b3a55","#ffffff")}
+  { front: face(["In", "Maintenance", "🚧"], "#2b3a55", "#ffffff"), back: face(["Contents"]) },   // KEEP: text
+  { front: face({ image: "/pages/1.gif", text: ["Page 1"] }),                                      // CHANGED: image, with text until it loads
+    back:  face("/pages/2.jpg") },                                                                // CHANGED: image only
+  { front: face(["Page", "3"], "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },   // KEEP
+  { front: face(["Page", "5"], "#ffffff", "#2b3a55"), back: face(["The", "End"], "#2b3a55", "#ffffff") }, // KEEP
 ];
 
 //book
