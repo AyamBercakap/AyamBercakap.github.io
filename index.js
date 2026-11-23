@@ -17,6 +17,12 @@ const sun = new THREE.DirectionalLight(0xffffff,2);
 sun.position.set(2,3,4);
 scene.add(sun);
 
+
+addEventListener("resize",()=>{
+    camera.aspect = innerWidth/innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth,innerHeight);
+})
 const canvas = document.createElement('canvas');
 canvas.width = 512;
 canvas.height = 717;
@@ -80,19 +86,42 @@ page.frustumCulled = false;
 page.position.x = -pageWidth/2;
 scene.add(page);
 
-const timer = new THREE.Timer();
-renderer.setAnimationLoop(() =>{
-    timer.update();
-    const et = timer.getElapsed();
-    const maxAngle = Math.PI * 0.80
-    bones[0].rotation.y = -((Math.sin(et)+1)/2)*maxAngle;
-    for (let i=1;i<bones.length;i++){
-        bones[i].rotation.y = - Math.sin(et)*0.04;
-    }
-    renderer.render(scene,camera);
+const INSIDE=0.18;
+const OUTSIDE=0.015;
+const TURNING=0.04;
+const FOLD = (1*Math.PI)/180;
+const FLATTEN =0.12;
+
+let opened=false;
+let turnedAt=-10;
+addEventListener("click",()=>{
+    opened=!opened;
+    turnedAt = timer.getElapsed();
 });
-addEventListener("resize",()=>{
-    camera.aspect = innerWidth/innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(innerWidth,innerHeight);
+
+
+const timer = new THREE.Timer();
+renderer.setAnimationLoop(()=>{
+    timer.update();
+    const dt = Math.min(timer.getDelta(),0.05);
+    const now = timer.getElapsed();
+    const turnT = Math.sin((Math.min(0.4,now-turnedAt)/0.4)*Math.PI);
+    const tr = opened ? -Math.PI/2:Math.PI/2;
+
+
+for (let i=0;i < bones.length;i++){
+    const inside = i < 8 ? Math.sin(i * 0.2 + 0.25):0;
+    const outside = i >= 8 ? Math.cos(i * 0.3 + 0.09) : 0;
+    const turning = Math.sin((i*Math.PI)/bones.length)*turnT;
+    
+    let rotY = INSIDE * inside * tr - OUTSIDE * outside * tr + TURNING * turning *tr;
+    if (i===0) rotY -= Math.PI/2 + Math.sign(tr) * FLATTEN
+    
+    const fold = i > 8 ? Math.sin((i*Math.PI)/bones.length -0.5) * turnT :0;
+    const rotX = Math.sign(tr) * FOLD * fold;
+    
+    bones[i].rotation.y = THREE.MathUtils.damp(bones[i].rotation.y, rotY, 4, dt);
+    bones[i].rotation.x = THREE.MathUtils.damp(bones[i].rotation.x, rotX, 6, dt);
+}
+renderer.render(scene,camera);
 })
