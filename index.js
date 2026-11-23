@@ -1,6 +1,7 @@
 //main setup shii
 import * as THREE from 'three';
 
+
 const scene = new THREE.Scene();
 
 const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight,0.1,100);
@@ -58,29 +59,28 @@ const TEX_W = 1024;
 const TEX_H = 1368;
 const maxAniso = renderer.capabilities.getMaxAnisotropy();
 
-function paintText(ctx,lines,bg,fg){
-  const k = TEX_W/512;
+function paintText(ctx, lines, bg, fg) {
+  const W = ctx.canvas.width, H = ctx.canvas.height;
+  const k = W / 512;
   ctx.fillStyle = bg;
-  ctx.fillRect(0,0,TEX_W,TEX_H);
-
-  const lineHeight = 90*k;
-  const startY = TEX_H / 2 - ((lines.length - 1) * lineHeight)/2;
+  ctx.fillRect(0, 0, W, H);
+  const lineHeight = 90 * k;
+  const startY = H / 2 - ((lines.length - 1) * lineHeight) / 2;
   ctx.font = `bold ${80 * k}px Georgia, serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = fg;
-  lines.forEach((line,i)=>ctx.fillText(line, TEX_W / 2, startY + i * lineHeight));
+  lines.forEach((line, i) => ctx.fillText(line, W / 2, startY + i * lineHeight));
 }
 
 function paintImg(ctx, img, bg) {
+  const W = ctx.canvas.width, H = ctx.canvas.height;
   ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, TEX_W, TEX_H);
+  ctx.fillRect(0, 0, W, H);
   const iw = img.displayWidth || img.videoWidth || img.naturalWidth || img.width;
   const ih = img.displayHeight || img.videoHeight || img.naturalHeight || img.height;
-  const s = Math.max(TEX_W / iw, TEX_H / ih);
-  const w = iw * s;
-  const h = ih * s;
-  ctx.drawImage(img, (TEX_W - w) / 2, (TEX_H - h) / 2, w, h);
+  const s = Math.max(W / iw, H / ih);
+  ctx.drawImage(img, (W - iw * s) / 2, (H - ih * s) / 2, iw * s, ih * s);
 }
 
 const MIME = { gif: "image/gif", apng: "image/png", png: "image/png", webp: "image/webp" };
@@ -100,6 +100,10 @@ async function playAnimated(url, texture, onFrame) {
   let i = 0;
   let next = decoder.decode({ frameIndex: 0 });
   while (texture.userData.playing) {
+    if (texture.userData.live === false || document.hidden) {
+      await sleep(200);
+      continue;
+    }
     const { image } = await next;
     const raw = image.duration / 1000;
     const ms = raw <= 10 ? 100 : raw;
@@ -108,23 +112,30 @@ async function playAnimated(url, texture, onFrame) {
     i = (i + 1) % count;
     next = decoder.decode({ frameIndex: i });
     await sleep(ms);
-    while (document.hidden) await sleep(250);
   }
   decoder.close();
 }
 //detects if text or image
-function face(content, bg = "#ffffff", fg = "#1a1d22") { 
-  const canvas = document.createElement("canvas");
-  canvas.width = TEX_W;
-  canvas.height = TEX_H;                      
-  const ctx = canvas.getContext("2d");
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = maxAniso;
+function face(content, bg = "#ffffff", fg = "#1a1d22") {
   const spec = Array.isArray(content) ? { text: content }
              : typeof content === "string" ? { image: content }
              : content;
+  const animated = !!spec.image && (spec.animated ?? /\.(gif|apng|webp)(\?|$)/i.test(spec.image));  
+  const q = animated ? 0.5 : 1;
+
+  const canvas = document.createElement("canvas");
+  canvas.width = TEX_W * q;
+  canvas.height = TEX_H * q;
+  const ctx = canvas.getContext("2d", { alpha: false });
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  if (animated) {
+    texture.generateMipmaps = false;
+    texture.minFilter = THREE.LinearFilter;
+  } else {
+    texture.anisotropy = maxAniso;
+  }
   
   paintText(ctx ,spec.text??[], bg, fg)
 
@@ -136,7 +147,6 @@ function face(content, bg = "#ffffff", fg = "#1a1d22") {
       img.src = spec.image;
     };
 
-    const animated = spec.animated ?? /\.(gif|apng|webp)(\?|$)/i.test(spec.image);
     if (animated && "ImageDecoder" in window) {
       playAnimated(spec.image, texture, (frame) => {
         paintImg(ctx, frame, bg);
@@ -146,7 +156,7 @@ function face(content, bg = "#ffffff", fg = "#1a1d22") {
         drawStatic();
       });
     } else {
-      drawStatic();                                 // Safari/iOS, or a normal image
+      drawStatic();
     }
   }
   return texture
@@ -156,7 +166,7 @@ function face(content, bg = "#ffffff", fg = "#1a1d22") {
 const sheets = [
   { front: face(["In", "Maintenance", "🚧"], "#2b3a55", "#ffffff"), back: face(["Contents"]) },   // KEEP: text
   { front: face({ image: "/pages/1.gif", text: ["Page 1"] }),                                      // CHANGED: image, with text until it loads
-    back:  face("/pages/2.jpg") },                                                                // CHANGED: image only
+    back:  face("/pages/2.gif") },                                                                // CHANGED: image only
   { front: face(["Page", "3"], "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },   // KEEP
   { front: face(["Page", "5"], "#ffffff", "#2b3a55"), back: face(["The", "End"], "#2b3a55", "#ffffff") }, // KEEP
 ];
@@ -193,7 +203,7 @@ function createPage(number, frontTex, backTex){
     mesh.bind(new THREE.Skeleton(bones));
     mesh.frustumCulled=false;
     book.add(mesh);
-    return {number,mesh,bones,opened:false,turnedAt:-10};
+    return { number, mesh, bones, opened: false, turnedAt: -10, textures: [frontTex, backTex] };
 }
 
 const pages = sheets.map((s,i)=> createPage(i,s.front,s.back));
@@ -262,36 +272,39 @@ renderer.setAnimationLoop(()=>{
     camera.position.z = THREE.MathUtils.damp(camera.position.z, fitDistance(single), 3, dt); 
 
     for (const pg of pages){
-        const opened = currentPage> pg.number;
-        if (pg.opened !== opened){
-            pg.opened = opened;
-            pg.turnedAt = now;
-        }
-        const turnT = Math.sin((Math.min(0.4,now-pg.turnedAt)/0.4)*Math.PI);
-        let tr = opened ? -Math.PI/2:Math.PI/2;
-        if (!closed) tr += pg.number * FAN;
+      const opened = currentPage> pg.number;
+      if (pg.opened !== opened){
+          pg.opened = opened;
+          pg.turnedAt = now;
+      }
+      const moving = now - pg.turnedAt < 1.2;
+      pg.textures[0].userData.live = moving || pg.number === currentPage;
+      pg.textures[1].userData.live = moving || pg.number === currentPage - 1;
+      const turnT = Math.sin((Math.min(0.4,now-pg.turnedAt)/0.4)*Math.PI);
+      let tr = opened ? -Math.PI/2:Math.PI/2;
+      if (!closed) tr += pg.number * FAN;
 
-        for (let i=0;i < pg.bones.length;i++){
-            const inside = i < 8 ? Math.sin(i * 0.2 + 0.25):0;
-            const outside = i >= 8 ? Math.cos(i * 0.3 + 0.09) : 0;
-            const turning = Math.sin((i*Math.PI)/pg.bones.length)*turnT;
-            
-            let rotY = INSIDE * inside * tr - OUTSIDE * outside * tr + TURNING * turning *tr;
-            if (i===0) rotY -= Math.PI/2 + Math.sign(tr) * FLATTEN
-            
-            const fold = i > 8 ? Math.sin((i*Math.PI)/pg.bones.length -0.5) * turnT :0;
-            let rotX = Math.sign(tr) * FOLD * fold;
-            
-            if (closed){
-                rotY = i === 0 ? tr - Math.PI / 2 : 0;
-                rotX = 0;
-            }
+      for (let i=0;i < pg.bones.length;i++){
+          const inside = i < 8 ? Math.sin(i * 0.2 + 0.25):0;
+          const outside = i >= 8 ? Math.cos(i * 0.3 + 0.09) : 0;
+          const turning = Math.sin((i*Math.PI)/pg.bones.length)*turnT;
+          
+          let rotY = INSIDE * inside * tr - OUTSIDE * outside * tr + TURNING * turning *tr;
+          if (i===0) rotY -= Math.PI/2 + Math.sign(tr) * FLATTEN
+          
+          const fold = i > 8 ? Math.sin((i*Math.PI)/pg.bones.length -0.5) * turnT :0;
+          let rotX = Math.sign(tr) * FOLD * fold;
+          
+          if (closed){
+              rotY = i === 0 ? tr - Math.PI / 2 : 0;
+              rotX = 0;
+          }
 
-            pg.bones[i].rotation.y = THREE.MathUtils.damp(pg.bones[i].rotation.y, rotY, 2.5, dt);
-            pg.bones[i].rotation.x = THREE.MathUtils.damp(pg.bones[i].rotation.x, rotX, 4, dt);
-        }
-        const targetZ = -pageDepth * (opened ? currentPage - 1 - pg.number : pg.number - currentPage);
-        pg.mesh.position.z = THREE.MathUtils.damp(pg.mesh.position.z, targetZ, 4, dt);
+          pg.bones[i].rotation.y = THREE.MathUtils.damp(pg.bones[i].rotation.y, rotY, 2.5, dt);
+          pg.bones[i].rotation.x = THREE.MathUtils.damp(pg.bones[i].rotation.x, rotX, 4, dt);
+      }
+      const targetZ = -pageDepth * (opened ? currentPage - 1 - pg.number : pg.number - currentPage);
+      pg.mesh.position.z = THREE.MathUtils.damp(pg.mesh.position.z, targetZ, 4, dt);
     }
     const onLeft = portrait() ? focusLeft : currentPage === pages.length;   
     const shift = (pageWidth * book.scale.x)/2;
