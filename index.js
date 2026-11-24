@@ -167,7 +167,7 @@ const sheets = [
   { front: face(["In", "Maintenance", "🚧"], "#2b3a55", "#ffffff"), back: face(["Performance","In"]) },
   { front: face(["Testing","phase"]),
     back:  face("/pages/1.gif") },
-  { front: face("[/pages/2.gif"], "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },
+  { front: face("/pages/2.gif", "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },
   { front: face(["Page", "5"], "#ffffff", "#2b3a55"), back: face(["The", "End"], "#2b3a55", "#ffffff") },
 ];
 
