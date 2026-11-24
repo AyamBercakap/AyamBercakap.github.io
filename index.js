@@ -164,11 +164,11 @@ function face(content, bg = "#ffffff", fg = "#1a1d22") {
 
 //page declaration
 const sheets = [
-  { front: face(["In", "Maintenance", "🚧"], "#2b3a55", "#ffffff"), back: face(["Contents"]) },   // KEEP: text
-  { front: face({ image: "/pages/1.gif", text: ["Page 1"] }),                                      // CHANGED: image, with text until it loads
-    back:  face("/pages/2.gif") },                                                                // CHANGED: image only
-  { front: face(["Page", "3"], "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },   // KEEP
-  { front: face(["Page", "5"], "#ffffff", "#2b3a55"), back: face(["The", "End"], "#2b3a55", "#ffffff") }, // KEEP
+  { front: face(["In", "Maintenance", "🚧"], "#2b3a55", "#ffffff"), back: face(["Performance","In"]) },
+  { front: face(["Testing","phase"]),
+    back:  face("/pages/1.gif") },
+  { front: face("[/pages/2.gif"], "#ffffff", "#2b3a55"), back: face(["Page", "4"], "#ffffff", "#2b3a55") },
+  { front: face(["Page", "5"], "#ffffff", "#2b3a55"), back: face(["The", "End"], "#2b3a55", "#ffffff") },
 ];
 
 //book
