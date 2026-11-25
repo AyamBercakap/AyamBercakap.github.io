@@ -66,7 +66,7 @@ function paintText(ctx, lines, bg, fg) {
   ctx.fillRect(0, 0, W, H);
   const lineHeight = 90 * k;
   const startY = H / 2 - ((lines.length - 1) * lineHeight) / 2;
-  ctx.font = `bold ${80 * k}px Georgia, serif`;
+  ctx.font = `bold ${70 * k}px Georgia, serif`;
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
   ctx.fillStyle = fg;
